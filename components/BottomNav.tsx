@@ -1,11 +1,11 @@
 "use client";
 
 const TABS = [
-  { id: "home", icon: "🌍", label: "My World" },
-  { id: "modules", icon: "🧩", label: "Skills", dot: true },
-  { id: "calm", icon: "☁️", label: "Calm" },
-  { id: "arworld", icon: "🔮", label: "AR World" },
-  { id: "buddy", icon: "🦊", label: "Sparky" },
+  { id: "home", icon: "\u{1F30D}", label: "My World" },
+  { id: "modules", icon: "\u{1F9E9}", label: "Skills", dot: true },
+  { id: "calm", icon: "\u2601\uFE0F", label: "Calm" },
+  { id: "quests", icon: "\u2694\uFE0F", label: "Quests" },
+  { id: "buddy", icon: "\u{1F98A}", label: "Sparky" },
 ] as const;
 
 export default function BottomNav({

@@ -1,6 +1,12 @@
 "use client";
 
 import { useCallback } from "react";
+import type { PlayerState } from "@/lib/hooks/usePlayerState";
+import type { PlayerStats } from "@/lib/hooks/useStatsState";
+import type { AvatarState } from "@/lib/hooks/useAvatarState";
+import SocialHub from "./SocialHub";
+import StatsSection from "./StatsSection";
+import AvatarDisplay from "./AvatarDisplay";
 
 const STAR_COUNT = 60;
 
@@ -10,12 +16,24 @@ export default function HomeScreen({
   onARWorld,
   onMoodPick,
   pickedMood,
+  player,
+  onJoinChatRoom,
+  stats,
+  onAchievements,
+  avatarState,
+  onStore,
 }: {
   onQuest: (type: string) => void;
   onCalm: () => void;
   onARWorld: () => void;
   onMoodPick: (label: string) => void;
   pickedMood: string | null;
+  player: PlayerState;
+  onJoinChatRoom: (roomId: string) => void;
+  stats: PlayerStats;
+  onAchievements: () => void;
+  avatarState: AvatarState;
+  onStore: () => void;
 }) {
   const moods = [
     { emoji: "😄", label: "GREAT" },
@@ -52,22 +70,22 @@ export default function HomeScreen({
 
       <div className="home-header">
         <div className="player-info">
-          <div className="avatar-ring">
-            <div className="avatar-inner">🦊</div>
-          </div>
+          <button type="button" className="home-avatar-tap" onClick={onStore}>
+            <AvatarDisplay avatarState={avatarState} size="sm" />
+          </button>
           <div>
-            <div className="player-name">Marcus</div>
-            <div className="player-level">⚡ LEVEL 7 EXPLORER</div>
+            <div className="player-name">{player.name}</div>
+            <div className="player-level">{"⚡"} LEVEL {player.level} EXPLORER</div>
           </div>
         </div>
         <div className="header-pills">
           <div className="pill-stat">
-            <span>🔥</span>
-            <span className="pill-fire">9</span>
+            <span>{"🔥"}</span>
+            <span className="pill-fire">{player.streak}</span>
           </div>
           <div className="pill-stat">
-            <span>⭐</span>
-            <span className="pill-star">340</span>
+            <span>{"⭐"}</span>
+            <span className="pill-star">{player.stars}</span>
           </div>
         </div>
       </div>
@@ -91,7 +109,7 @@ export default function HomeScreen({
             }}
           >
             <div className="island-glow" style={{ background: "rgba(255,107,0,.5)" }} />
-            <div className="island-emoji">🗣️</div>
+            <div className="island-emoji">{"🗣️"}</div>
             <div className="island-name">SPEAK UP</div>
           </div>
           <div className="island-badge">!</div>
@@ -115,7 +133,7 @@ export default function HomeScreen({
             }}
           >
             <div className="island-glow" style={{ background: "rgba(0,212,255,.5)" }} />
-            <div className="island-emoji">☁️</div>
+            <div className="island-emoji">{"☁️"}</div>
             <div className="island-name">CALM ZONE</div>
           </div>
           <div className="island-shadow" />
@@ -138,7 +156,7 @@ export default function HomeScreen({
             }}
           >
             <div className="island-glow" style={{ background: "rgba(168,85,247,.5)" }} />
-            <div className="island-emoji">💭</div>
+            <div className="island-emoji">{"💭"}</div>
             <div className="island-name">THINK IT</div>
           </div>
           <div className="island-shadow" />
@@ -156,7 +174,7 @@ export default function HomeScreen({
               background: "linear-gradient(135deg,#7ED321,#00A86B)",
             }}
           >
-            <div className="island-emoji">🌟</div>
+            <div className="island-emoji">{"🌟"}</div>
             <div className="island-name">LOCKED</div>
           </div>
           <div className="island-shadow" />
@@ -179,30 +197,32 @@ export default function HomeScreen({
             }}
           >
             <div className="island-glow" style={{ background: "rgba(255,184,0,.5)" }} />
-            <div className="island-emoji">🛡️</div>
+            <div className="island-emoji">{"🛡️"}</div>
             <div className="island-name">WORRY BUSTER</div>
           </div>
           <div className="island-shadow" />
         </div>
 
         <button type="button" className="ar-fab" onClick={onARWorld}>
-          🔮 AR WORLD
+          {"🌿"} WILD ZONE
         </button>
       </div>
 
       <div className="xp-section">
         <div className="xp-row">
-          <span className="xp-label">⚡ LEVEL 7 XP</span>
-          <span className="xp-nums">340 / 500</span>
+          <span className="xp-label">{"⚡"} LEVEL {player.level} XP</span>
+          <span className="xp-nums">{player.xp} / {player.xpMax}</span>
         </div>
         <div className="xp-track">
-          <div className="xp-fill" />
+          <div className="xp-fill" style={{ width: `${(player.xp / player.xpMax) * 100}%` }} />
         </div>
       </div>
 
       <div className="scrollable" style={{ flex: 1 }}>
+        <StatsSection stats={stats} onTrophyTap={onAchievements} />
+
         <div className="mood-card">
-          <div className="mood-title">🌡️ How do you feel right now?</div>
+          <div className="mood-title">{"🌡️"} How do you feel right now?</div>
           <div className="mood-row">
             {moods.map((m) => (
               <button
@@ -219,21 +239,23 @@ export default function HomeScreen({
         </div>
 
         <div className="streak-card">
-          <div className="streak-flame">🔥</div>
+          <div className="streak-flame">{"🔥"}</div>
           <div>
-            <div className="streak-days">9 Days!</div>
-            <div className="streak-sub">Don&apos;t break it! 💪</div>
+            <div className="streak-days">{player.streak} Days!</div>
+            <div className="streak-sub">Don&apos;t break it! {"💪"}</div>
           </div>
           <div className="streak-dots">
-            <div className="sd done">✓</div>
-            <div className="sd done">✓</div>
-            <div className="sd done">✓</div>
-            <div className="sd done">✓</div>
-            <div className="sd done">✓</div>
-            <div className="sd now">★</div>
+            <div className="sd done">{"✓"}</div>
+            <div className="sd done">{"✓"}</div>
+            <div className="sd done">{"✓"}</div>
+            <div className="sd done">{"✓"}</div>
+            <div className="sd done">{"✓"}</div>
+            <div className="sd now">{"★"}</div>
             <div className="sd empty" />
           </div>
         </div>
+
+        <SocialHub onJoinRoom={onJoinChatRoom} />
 
         <div className="section-label">
           Today&apos;s Quests <span>3 left</span>
@@ -247,9 +269,9 @@ export default function HomeScreen({
             role="button"
             tabIndex={0}
           >
-            <div className="qp-tag">🗣️ Speak Up Island</div>
+            <div className="qp-tag">{"🗣️"} Speak Up Island</div>
             <div className="qp-title">Ask for Help at Work</div>
-            <div className="qp-xp">⭐ +50 Stars</div>
+            <div className="qp-xp">{"⭐"} +50 Stars</div>
           </div>
           <div
             className="quest-pill"
@@ -259,9 +281,9 @@ export default function HomeScreen({
             role="button"
             tabIndex={0}
           >
-            <div className="qp-tag">💭 Think Island</div>
+            <div className="qp-tag">{"💭"} Think Island</div>
             <div className="qp-title">Flip a Bad Thought</div>
-            <div className="qp-xp">⭐ +40 Stars</div>
+            <div className="qp-xp">{"⭐"} +40 Stars</div>
           </div>
           <div
             className="quest-pill"
@@ -271,9 +293,9 @@ export default function HomeScreen({
             role="button"
             tabIndex={0}
           >
-            <div className="qp-tag">☁️ Calm Zone</div>
+            <div className="qp-tag">{"☁️"} Calm Zone</div>
             <div className="qp-title">Box Breathing Challenge</div>
-            <div className="qp-xp">⭐ +30 Stars</div>
+            <div className="qp-xp">{"⭐"} +30 Stars</div>
           </div>
           <div
             className="quest-pill"
@@ -283,9 +305,9 @@ export default function HomeScreen({
             role="button"
             tabIndex={0}
           >
-            <div className="qp-tag">🔮 AR World</div>
+            <div className="qp-tag">{"🌿"} Wild Zone</div>
             <div className="qp-title">Catch a Calm Creature!</div>
-            <div className="qp-xp">⭐ +60 Stars</div>
+            <div className="qp-xp">{"⭐"} +60 Stars</div>
           </div>
         </div>
 

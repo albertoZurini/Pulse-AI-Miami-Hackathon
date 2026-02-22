@@ -1013,6 +1013,139 @@
   color: var(--cyan);
 }
 
+/* Calm Scene Selector */
+.calm-scene-scroll {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  position: relative;
+  z-index: 5;
+}
+.calm-scene-scroll::-webkit-scrollbar {
+  display: none;
+}
+.calm-scene-card {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Nunito", sans-serif;
+  color: white;
+  transition: all 0.2s;
+}
+.calm-scene-card.selected {
+  border-color: var(--cyan);
+  background: rgba(0, 212, 255, 0.12);
+}
+.calm-scene-card.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.csc-emoji {
+  font-size: 20px;
+}
+.csc-name {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Breathing Circle */
+.breathing-circle-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  z-index: 5;
+}
+.breathing-circle {
+  width: 100%;
+  height: 100%;
+  border: 3px solid;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 1s ease-in-out;
+}
+.breathing-glow-ring {
+  position: absolute;
+  inset: -6px;
+  border: 2px solid;
+  transition: all 1s ease-in-out;
+}
+.breathing-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  z-index: 2;
+}
+.breathing-word {
+  font-family: "Fredoka One", cursive;
+  font-size: 15px;
+  transition: color 0.5s;
+}
+.breathing-count {
+  font-family: "Fredoka One", cursive;
+  font-size: 36px;
+  line-height: 1;
+  transition: all 0.5s;
+}
+
+/* Body Outline */
+.body-outline-wrap {
+  position: relative;
+  width: 160px;
+  height: 180px;
+}
+.body-outline-svg {
+  width: 100%;
+  height: 100%;
+}
+.body-part {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 0.5;
+}
+.body-region {
+  fill: transparent;
+  stroke: transparent;
+  transition: all 0.5s ease;
+}
+.body-region.active {
+  fill: rgba(255, 184, 0, 0.3);
+  stroke: rgba(255, 184, 0, 0.8);
+  stroke-width: 1;
+  animation: bodyGlow 1.5s ease-in-out infinite;
+}
+.body-region.complete {
+  fill: rgba(126, 211, 33, 0.15);
+  stroke: rgba(126, 211, 33, 0.4);
+  stroke-width: 0.5;
+}
+@keyframes bodyGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.body-region-label {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Fredoka One", cursive;
+  font-size: 12px;
+  color: var(--amber);
+  letter-spacing: 1px;
+  animation: fadeUp 0.3s ease;
+}
+
 .box-breath {
   flex: 1;
   display: flex;
@@ -1022,50 +1155,6 @@
   padding: 20px;
   position: relative;
   z-index: 5;
-}
-.box-wrap {
-  position: relative;
-  width: 200px;
-  height: 200px;
-}
-.box-outline {
-  width: 100%;
-  height: 100%;
-  border-radius: 30px;
-  border: 3px solid rgba(0, 212, 255, 0.3);
-  position: relative;
-}
-.box-dot {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 20px var(--cyan);
-  top: -9px;
-  left: -9px;
-  transition: all 1s ease;
-}
-.box-center {
-  position: absolute;
-  inset: 20px;
-  background: rgba(0, 212, 255, 0.05);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-.box-word {
-  font-family: "Fredoka One", cursive;
-  font-size: 17px;
-  color: var(--cyan);
-}
-.box-count {
-  font-family: "Fredoka One", cursive;
-  font-size: 36px;
-  line-height: 1;
 }
 .box-instruction,
 .breath-instruction {
@@ -1861,4 +1950,1083 @@
   border-radius: 50%;
   background: var(--magenta);
   border: 1.5px solid var(--navy);
+}
+
+/* QUESTS LIST */
+#quests {
+  background: var(--dark);
+  overflow: hidden;
+}
+.quests-list-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.quests-list-header {
+  padding: 14px 20px 16px;
+  position: relative;
+  z-index: 5;
+}
+.quests-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+.quests-list-scroll::-webkit-scrollbar {
+  display: none;
+}
+.quest-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  margin-bottom: 8px;
+}
+.quest-section-header span:first-child {
+  font-family: "Fredoka One", cursive;
+  font-size: 18px;
+}
+.quest-section-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.quest-list-card {
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.quest-list-card:active {
+  transform: scale(0.97);
+}
+.qlc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.qlc-emoji {
+  font-size: 28px;
+}
+.qlc-island {
+  font-size: 10px;
+  font-weight: 900;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.qlc-title {
+  font-family: "Fredoka One", cursive;
+  font-size: 16px;
+  line-height: 1.2;
+}
+.qlc-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.qlc-xp {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--amber);
+}
+.qlc-steps {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.creature-quest-group {
+  margin-bottom: 14px;
+}
+.cqg-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 8px;
+}
+.cqg-emoji {
+  font-size: 24px;
+}
+.cqg-name {
+  font-family: "Fredoka One", cursive;
+  font-size: 15px;
+}
+.cqg-skill {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+  margin-left: auto;
+}
+.creature-quest-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.creature-quest-card:active {
+  transform: scale(0.97);
+}
+.creature-quest-card.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.creature-quest-card.locked:active {
+  transform: none;
+}
+.cqc-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.cqc-xp {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--amber);
+  flex-shrink: 0;
+}
+
+/* STATS SECTION */
+.stats-section {
+  margin: 0 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 14px 16px;
+  position: relative;
+  z-index: 5;
+}
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.stats-title {
+  font-family: "Fredoka One", cursive;
+  font-size: 16px;
+}
+.trophy-btn {
+  background: rgba(255, 184, 0, 0.12);
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--amber);
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  transition: transform 0.15s;
+}
+.trophy-btn:active {
+  transform: scale(0.93);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.stat-tile {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.st-emoji {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+.st-value {
+  font-family: "Fredoka One", cursive;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--amber);
+}
+.st-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ACHIEVEMENTS SCREEN */
+#achievements {
+  background: var(--dark);
+  overflow: hidden;
+}
+.achievements-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.achievements-header {
+  padding: 14px 20px 16px;
+}
+.achievement-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+.achievement-scroll::-webkit-scrollbar {
+  display: none;
+}
+.ach-section-label {
+  font-family: "Fredoka One", cursive;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.achievement-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.achievement-badge {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 12px;
+  text-align: center;
+  transition: transform 0.15s;
+}
+.achievement-badge.earned {
+  border-color: rgba(255, 184, 0, 0.3);
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.08), rgba(255, 107, 0, 0.05));
+}
+.achievement-badge.locked {
+  opacity: 0.45;
+}
+.achievement-badge.mystery {
+  border-color: rgba(168, 85, 247, 0.2);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(91, 47, 232, 0.05));
+}
+.ab-emoji {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+.ab-name {
+  font-family: "Fredoka One", cursive;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.ab-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.ab-xp {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--amber);
+}
+
+/* ACHIEVEMENT POPUP */
+.achievement-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeUp 0.3s ease;
+  cursor: pointer;
+}
+.ap-card {
+  background: var(--card);
+  border: 2px solid rgba(255, 184, 0, 0.4);
+  border-radius: 28px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 300px;
+  width: 100%;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ap-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--amber);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.ap-emoji {
+  font-size: 56px;
+  margin-bottom: 8px;
+}
+.ap-name {
+  font-family: "Fredoka One", cursive;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+.ap-desc {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.ap-xp {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--amber);
+}
+
+/* BONUS MISSION */
+.bonus-mission-card {
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.15), rgba(255, 107, 0, 0.1));
+  border: 2px solid rgba(255, 184, 0, 0.4);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 14px;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bm-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.bm-badge {
+  background: var(--amber);
+  color: var(--dark);
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+.bm-emoji {
+  font-size: 22px;
+}
+.bm-title {
+  font-family: "Fredoka One", cursive;
+  font-size: 16px;
+  flex: 1;
+}
+.bm-xp {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--amber);
+}
+.bm-question {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.bm-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bm-choice {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  color: white;
+  font-family: "Nunito", sans-serif;
+  transition: all 0.15s;
+}
+.bm-choice:active {
+  background: rgba(255, 184, 0, 0.2);
+  border-color: var(--amber);
+}
+
+/* SOCIAL HUB */
+.social-hub {
+  margin: 0 16px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px;
+  position: relative;
+  z-index: 5;
+}
+.social-hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.social-hub-title {
+  font-family: "Fredoka One", cursive;
+  font-size: 18px;
+}
+.social-hub-online {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--lime);
+}
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lime);
+  animation: onlinePulse 1.5s ease infinite;
+}
+.online-dot-sm {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  animation: onlinePulse 1.5s ease infinite;
+}
+@keyframes onlinePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.social-hub-sub {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.social-worlds-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.social-worlds-scroll::-webkit-scrollbar {
+  display: none;
+}
+.social-world-card {
+  flex-shrink: 0;
+  width: 120px;
+  border-radius: 18px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+.social-world-card:active {
+  transform: scale(0.93);
+}
+.social-world-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent);
+}
+.swc-emoji {
+  font-size: 32px;
+  margin-bottom: 6px;
+  position: relative;
+}
+.swc-name {
+  font-family: "Fredoka One", cursive;
+  font-size: 13px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  position: relative;
+}
+.swc-desc {
+  font-size: 10px;
+  opacity: 0.8;
+  font-weight: 700;
+  margin-bottom: 6px;
+  position: relative;
+}
+.swc-online {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 3px 8px;
+  position: relative;
+  width: fit-content;
+}
+
+/* CHAT ROOM */
+#chatroom {
+  background: var(--dark);
+  overflow: hidden;
+}
+.chatroom-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.chatroom-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.chatroom-ambient-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.chatroom-ambient {
+  position: absolute;
+  bottom: -30px;
+  opacity: 0.15;
+  animation: chatAmbientFloat linear infinite;
+}
+@keyframes chatAmbientFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 0.15; }
+  90% { opacity: 0.08; }
+  100% {
+    transform: translateY(-110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+.chatroom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(15, 10, 46, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+  z-index: 10;
+}
+.chatroom-back {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  font-weight: 800;
+}
+.chatroom-header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chatroom-header-emoji {
+  font-size: 22px;
+}
+.chatroom-header-name {
+  font-family: "Fredoka One", cursive;
+  font-size: 17px;
+}
+.chatroom-header-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--lime);
+}
+.chatroom-quest-nudge {
+  background: linear-gradient(135deg, rgba(91, 47, 232, 0.2), rgba(168, 85, 247, 0.15));
+  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  z-index: 5;
+}
+.chatroom-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 5;
+}
+.chatroom-messages::-webkit-scrollbar {
+  display: none;
+}
+.chatroom-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  animation: fadeUp 0.25s ease;
+}
+.chatroom-msg.mine {
+  flex-direction: row-reverse;
+}
+.chatroom-msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.chatroom-msg-content {
+  max-width: 75%;
+}
+.chatroom-msg-name {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.chatroom-msg-text {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.chatroom-msg.mine .chatroom-msg-text {
+  background: linear-gradient(135deg, var(--magenta), var(--orange));
+  border: none;
+  border-radius: 16px 16px 4px 16px;
+}
+.chatroom-input-bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px 20px;
+  background: rgba(15, 10, 46, 0.9);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 10;
+}
+.chatroom-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: white;
+  font-family: "Nunito", sans-serif;
+  font-size: 14px;
+}
+.chatroom-input:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+.chatroom-send {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--magenta), var(--orange));
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+}
+
+/* Chat room events */
+.chat-event-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  text-align: center;
+  animation: eventPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.chat-event-emoji {
+  font-size: 64px;
+  margin-bottom: 8px;
+  animation: eventSpin 0.6s ease;
+}
+@keyframes eventSpin {
+  from { transform: scale(0) rotate(-180deg); }
+  to { transform: scale(1) rotate(0deg); }
+}
+.chat-event-label {
+  font-family: "Fredoka One", cursive;
+  font-size: 22px;
+  color: white;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+@keyframes eventPop {
+  from { transform: translate(-50%, -50%) scale(0); }
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+.chatroom-shake {
+  animation: chatShake 0.5s ease;
+}
+@keyframes chatShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+/* ============================================= */
+/* AVATAR DISPLAY                                */
+/* ============================================= */
+.avatar-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-display-ring {
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.avatar-display-bg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 50%;
+}
+.avatar-display-emoji {
+  position: relative;
+  z-index: 2;
+}
+.avatar-overlay {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+.avatar-hat {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6em;
+}
+.avatar-acc {
+  bottom: -2px;
+  right: -2px;
+  font-size: 0.45em;
+}
+
+/* Sizes */
+.avatar-display-sm .avatar-display-ring {
+  width: 44px;
+  height: 44px;
+}
+.avatar-display-sm .avatar-display-emoji {
+  font-size: 24px;
+}
+.avatar-display-md .avatar-display-ring {
+  width: 64px;
+  height: 64px;
+}
+.avatar-display-md .avatar-display-emoji {
+  font-size: 34px;
+}
+.avatar-display-lg .avatar-display-ring {
+  width: 96px;
+  height: 96px;
+  border-width: 4px;
+}
+.avatar-display-lg .avatar-display-emoji {
+  font-size: 52px;
+}
+.avatar-display-lg .avatar-hat {
+  top: -10px;
+  font-size: 0.55em;
+}
+.avatar-display-lg .avatar-acc {
+  bottom: -4px;
+  right: -4px;
+  font-size: 0.4em;
+}
+
+.home-avatar-tap {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s;
+}
+.home-avatar-tap:active {
+  transform: scale(0.92);
+}
+
+/* ============================================= */
+/* CHARACTER SELECT SCREEN                       */
+/* ============================================= */
+.character-select-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 32px 20px;
+  background: radial-gradient(ellipse at 50% 30%, #3b1fa8 0%, #0f0a2e 70%);
+  position: relative;
+  overflow: hidden;
+}
+.cs-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+}
+.cs-title {
+  font-family: "Fredoka One", cursive;
+  font-size: 28px;
+  color: white;
+  margin-bottom: 6px;
+}
+.cs-subtitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.character-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.cs-avatar-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 18px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.3s, background 0.3s;
+  font-family: "Nunito", sans-serif;
+}
+.cs-avatar-card:hover,
+.cs-avatar-card:focus-visible {
+  transform: scale(1.06);
+  border-color: var(--av-color, var(--accent));
+  background: rgba(255, 255, 255, 0.1);
+}
+.cs-avatar-card:active {
+  transform: scale(0.96);
+}
+.cs-avatar-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s;
+}
+.cs-avatar-card:hover .cs-avatar-ring,
+.cs-avatar-card:focus-visible .cs-avatar-ring {
+  box-shadow: 0 0 16px var(--av-color, var(--accent));
+}
+.cs-avatar-emoji {
+  font-size: 34px;
+}
+.cs-avatar-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.cs-hint {
+  font-family: "Nunito", sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ============================================= */
+/* AVATAR STORE SCREEN                           */
+/* ============================================= */
+.store-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: radial-gradient(ellipse at 50% 0%, #2a1470 0%, #0f0a2e 60%);
+  padding-bottom: 20px;
+}
+.store-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+}
+.store-title {
+  font-family: "Fredoka One", cursive;
+  font-size: 22px;
+  color: white;
+}
+.store-stars {
+  font-family: "Nunito", sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #FFB800;
+  background: rgba(255, 184, 0, 0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.store-preview {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 12px;
+}
+.store-feedback {
+  text-align: center;
+  font-family: "Nunito", sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: #7ED321;
+  padding: 4px;
+  animation: feedbackPop 0.3s ease;
+}
+@keyframes feedbackPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.store-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.store-tabs::-webkit-scrollbar { display: none; }
+.store-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  font-family: "Nunito", sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.store-tab.active {
+  background: rgba(91, 47, 232, 0.4);
+  border-color: var(--accent);
+  color: white;
+}
+.store-content {
+  flex: 1;
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.store-item {
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  font-family: "Nunito", sans-serif;
+}
+.store-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.03);
+}
+.store-item:active {
+  transform: scale(0.96);
+}
+.store-item.owned {
+  border-color: rgba(126, 211, 33, 0.3);
+}
+.store-item.equipped {
+  border-color: var(--accent);
+  background: rgba(91, 47, 232, 0.2);
+  box-shadow: 0 0 12px rgba(91, 47, 232, 0.3);
+}
+.si-emoji {
+  font-size: 28px;
+  margin-bottom: 2px;
+}
+.si-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  line-height: 1.2;
+}
+.si-cost {
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFB800;
+}
+.si-equip {
+  font-size: 10px;
+  font-weight: 800;
+  color: #7ED321;
+  text-transform: uppercase;
+}
+.si-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
