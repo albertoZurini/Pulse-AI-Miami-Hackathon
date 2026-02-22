@@ -35,38 +35,18 @@ body {
   background: #0A0620;
   color: var(--text);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 16px;
+  margin: 0;
 }
 
-/* Phone shell */
-.phone {
-  width: 390px;
+/* Full-width app container with bottom nav */
+.pulse-app {
+  width: 100%;
+  min-height: 100vh;
   background: var(--navy);
-  border-radius: 50px;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 8px #111, 0 0 0 10px #333, 0 0 60px rgba(91,47,232,0.3);
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 820px;
-}
-
-.notch {
-  width: 120px; height: 30px;
-  background: #111;
-  border-radius: 0 0 20px 20px;
-  margin: 0 auto;
-  position: relative; z-index: 20;
-}
-
-.status {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 4px 24px 0;
-  font-size: 12px; font-weight: 800;
-  position: relative; z-index: 10;
 }
 
 .screen {

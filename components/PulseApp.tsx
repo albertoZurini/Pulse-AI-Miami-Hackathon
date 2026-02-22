@@ -198,13 +198,7 @@ export default function PulseApp() {
   const showNav = currentScreen !== "arworld" && currentScreen !== "win";
 
   return (
-    <div className="phone">
-      <div className="notch" />
-      <div className="status">
-        <span>9:41</span>
-        <span style={{ color: "var(--amber)" }}>🔋 ▶</span>
-      </div>
-
+    <div className="pulse-app">
       {currentScreen === "home" && (
         <div className={`screen active`} id="home">
           <HomeScreen
