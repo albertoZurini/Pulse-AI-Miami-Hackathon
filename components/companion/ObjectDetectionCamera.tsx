@@ -16,9 +16,10 @@ const ObjectDetectionCamera = (props: {
     inferenceTime: number,
     ctx: CanvasRenderingContext2D,
     modelName: string
-  ) => void;
+  ) => number[] | void;
   currentModelResolution: number[];
   changeCurrentModelResolution: (width?: number, height?: number) => void;
+  onDetections?: (classIds: number[]) => void;
 }) => {
   const [inferenceTime, setInferenceTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
@@ -71,7 +72,22 @@ const ObjectDetectionCamera = (props: {
       data
     );
 
-    props.postprocess(outputTensor, inferenceTime, ctx, props.modelName);
+    const classIds = props.postprocess(
+      outputTensor,
+      inferenceTime,
+      ctx,
+      props.modelName
+    );
+    console.debug("[Companion Camera] runModel done", {
+      hasClassIds: Array.isArray(classIds),
+      classIdsLength: classIds?.length ?? 0,
+      classIds: classIds ?? [],
+      hasOnDetections: !!props.onDetections,
+      willCallOnDetections: !!(classIds?.length && props.onDetections),
+    });
+    if (classIds?.length && props.onDetections) {
+      props.onDetections(classIds);
+    }
     setInferenceTime(inferenceTime);
   };
 

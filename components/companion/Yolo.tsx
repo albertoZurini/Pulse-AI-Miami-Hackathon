@@ -14,7 +14,7 @@ type PostprocessFunction = (
   modelResolution: number[],
   tensor: Tensor,
   conf2color: (conf: number) => string
-) => void;
+) => number[];
 
 /** Model path: served from public/companion/models/ */
 const COMPANION_MODEL_BASE = "/companion/models";
@@ -28,7 +28,11 @@ const RES_TO_MODEL: [number[], string][] = [
   [[640, 640], "yolov7-tiny_640x640.onnx"],
 ];
 
-const Yolo = (props: { width?: number; height?: number }) => {
+const Yolo = (props: {
+  width?: number;
+  height?: number;
+  onDetections?: (classIds: number[]) => void;
+}) => {
   const [modelResolution, setModelResolution] = useState<number[]>(
     RES_TO_MODEL[0][0]
   );
@@ -157,15 +161,34 @@ const Yolo = (props: { width?: number; height?: number }) => {
     "yolov7-tiny_640x640.onnx": postprocessYolov7,
   };
 
-  const postprocess = async (
+  const postprocess = (
     tensor: Tensor,
-    inferenceTime: number,
+    _inferenceTime: number,
     ctx: CanvasRenderingContext2D,
     modelName: string
-  ) => {
+  ): number[] => {
     if (modelName in postprocessMap) {
-      postprocessMap[modelName](ctx, modelResolution, tensor, conf2color);
+      const classIds = postprocessMap[modelName](
+        ctx,
+        modelResolution,
+        tensor,
+        conf2color
+      );
+      if (classIds.length > 0) {
+        console.debug("[Companion Yolo] postprocess returned classIds", {
+          modelName,
+          classIds,
+          count: classIds.length,
+        });
+      }
+      props.onDetections?.(classIds);
+      return classIds;
     }
+    console.debug("[Companion Yolo] postprocess: modelName not in map", {
+      modelName,
+      keys: Object.keys(postprocessMap),
+    });
+    return [];
   };
 
   if (session == null) {
@@ -186,6 +209,7 @@ const Yolo = (props: { width?: number; height?: number }) => {
       changeCurrentModelResolution={changeModelResolution}
       currentModelResolution={modelResolution}
       modelName={modelName}
+      onDetections={props.onDetections}
     />
   );
 };
@@ -295,6 +319,7 @@ const postprocessYolov11: PostprocessFunction = (
   }
 
   const nmsDetections = applyNMS(detections, 0.4);
+  const classIds = [...new Set(nmsDetections.map((d) => d.classId))];
 
   for (const detection of nmsDetections) {
     const x0 = detection.x0 * dx;
@@ -319,6 +344,7 @@ const postprocessYolov11: PostprocessFunction = (
     ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
+  return classIds;
 };
 
 function postprocessYolov10(
@@ -326,12 +352,13 @@ function postprocessYolov10(
   modelResolution: number[],
   tensor: Tensor,
   conf2color: (conf: number) => string
-) {
+): number[] {
   const dx = ctx.canvas.width / modelResolution[0];
   const dy = ctx.canvas.height / modelResolution[1];
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+  const classIds: number[] = [];
   let x0: number, y0: number, x1: number, y1: number, cls_id: number, score: number;
   for (let i = 0; i < tensor.dims[1]; i += 6) {
     [x0, y0, x1, y1, score, cls_id] = Array.from(
@@ -339,6 +366,7 @@ function postprocessYolov10(
     ) as number[];
     if (score < 0.25) break;
 
+    classIds.push(cls_id);
     [x0, x1] = [x0, x1].map((x: number) => x * dx);
     [y0, y1] = [y0, y1].map((x: number) => x * dy);
     [x0, y0, x1, y1, cls_id] = [x0, y0, x1, y1, cls_id].map((x: number) =>
@@ -362,6 +390,7 @@ function postprocessYolov10(
     ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
+  return [...new Set(classIds)];
 }
 
 function postprocessYolov7(
@@ -369,17 +398,19 @@ function postprocessYolov7(
   modelResolution: number[],
   tensor: Tensor,
   conf2color: (conf: number) => string
-) {
+): number[] {
   const dx = ctx.canvas.width / modelResolution[0];
   const dy = ctx.canvas.height / modelResolution[1];
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  const classIds: number[] = [];
   let batch_id: number, x0: number, y0: number, x1: number, y1: number, cls_id: number, score: number;
   for (let i = 0; i < tensor.dims[0]; i++) {
     [batch_id, x0, y0, x1, y1, cls_id, score] = Array.from(
       (tensor.data as Float32Array).slice(i * 7, i * 7 + 7)
     ) as number[];
 
+    classIds.push(cls_id);
     [x0, x1] = [x0, x1].map((x: number) => x * dx);
     [y0, y1] = [y0, y1].map((x: number) => x * dy);
     [x0, y0, x1, y1, cls_id] = [x0, y0, x1, y1, cls_id].map((x: number) =>
@@ -403,4 +434,5 @@ function postprocessYolov7(
     ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
+  return [...new Set(classIds)];
 }
