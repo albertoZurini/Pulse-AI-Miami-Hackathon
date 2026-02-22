@@ -1,6 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase";
+import type { ARCreatureRow, ARCreatureDisplay } from "@/lib/supabase";
+
+const FALLBACK_CREATURES: ARCreatureDisplay[] = [
+  { name: "Breathe Bear", emoji: "🐻‍❄️", skill: "Breathing", context: "Feeling really nervous right now?", top: 100, left: 50, dur: 3, color: "#00D4FF", badge: true },
+  { name: "Think Fox", emoji: "🦊", skill: "Thought Flipping", context: "You just heard something that made you feel bad about yourself.", top: 160, right: 40, dur: 2.5, delay: 0.5, color: "#FF6B00", badge: true },
+  { name: "Speak Owl", emoji: "🦉", skill: "Self-Advocacy", context: "You want something but don't know how to ask.", top: 230, left: 140, dur: 4, delay: 1, color: "#A855F7", badge: false },
+];
+
+function rowToDisplay(row: ARCreatureRow): ARCreatureDisplay {
+  const pos = (row.position || {}) as { top?: number; left?: number; right?: number; dur?: number; delay?: number };
+  return {
+    id: row.id,
+    name: row.name,
+    emoji: row.emoji,
+    skill: row.skill,
+    context: row.context,
+    practice_question: row.practice_question,
+    choices: Array.isArray(row.choices) ? row.choices : undefined,
+    top: pos.top ?? 100,
+    left: pos.left,
+    right: pos.right,
+    dur: pos.dur ?? 3,
+    delay: pos.delay,
+    color: row.color || "#00D4FF",
+    badge: row.badge ?? false,
+  };
+}
 
 export default function ARWorldScreen({
   onBack,
@@ -17,7 +45,7 @@ export default function ARWorldScreen({
   onDismissCatch,
 }: {
   onBack: () => void;
-  onCatchCreature: (name: string, emoji: string, skill: string, context: string) => void;
+  onCatchCreature: (creature: ARCreatureDisplay) => void;
   catchModalOpen: boolean;
   catchEmoji: string;
   catchName: string;
@@ -30,15 +58,48 @@ export default function ARWorldScreen({
   onDismissCatch: () => void;
 }) {
   const [pickedIndex, setPickedIndex] = useState<number | null>(null);
+  const [creatures, setCreatures] = useState<ARCreatureDisplay[]>(FALLBACK_CREATURES);
+  const supabase = createClient();
+
   useEffect(() => {
     if (!catchModalOpen) setPickedIndex(null);
   }, [catchModalOpen]);
 
-  const creatures = [
-    { name: "Breathe Bear", emoji: "🐻‍❄️", skill: "Breathing", context: "Feeling really nervous right now?", top: 100, left: 50, dur: 3, color: "#00D4FF", badge: true },
-    { name: "Think Fox", emoji: "🦊", skill: "Thought Flipping", context: "You just heard something that made you feel bad about yourself.", top: 160, right: 40, dur: 2.5, delay: 0.5, color: "#FF6B00", badge: true },
-    { name: "Speak Owl", emoji: "🦉", skill: "Self-Advocacy", context: "You want something but don't know how to ask.", top: 230, left: 140, dur: 4, delay: 1, color: "#A855F7", badge: false },
-  ];
+  const fetchAndSubscribe = useCallback(() => {
+    if (!supabase) return;
+    supabase
+      .from("ar_creatures")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn("[ARWorld] Failed to fetch creatures, using fallback", error);
+          return;
+        }
+        if (data && data.length > 0) {
+          const display = (data as ARCreatureRow[]).map(rowToDisplay);
+          setCreatures(display);
+          console.info("[ARWorld] Loaded creatures from Supabase", { count: display.length });
+        }
+      });
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchAndSubscribe();
+  }, [fetchAndSubscribe]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const channel = supabase
+      .channel("ar_world_creatures")
+      .on("postgres_changes", { event: "*", schema: "public", table: "ar_creatures" }, () => {
+        fetchAndSubscribe();
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, fetchAndSubscribe]);
 
   return (
     <>
@@ -52,9 +113,9 @@ export default function ARWorldScreen({
         <div style={{ position: "absolute", top: 200, left: 40, fontSize: 24, opacity: 0.4 }}>✨</div>
         <div style={{ position: "absolute", top: 280, right: 50, fontSize: 20, opacity: 0.3 }}>✨</div>
 
-        {creatures.map((cr) => (
+        {creatures.map((cr, index) => (
           <div
-            key={cr.name}
+            key={cr.id ?? `ar-creature-${index}-${cr.emoji}-${cr.name}`}
             className="ar-creature"
             style={{
               top: cr.top,
@@ -63,8 +124,8 @@ export default function ARWorldScreen({
               animationDuration: `${cr.dur}s`,
               animationDelay: `${cr.delay ?? 0}s`,
             }}
-            onClick={() => onCatchCreature(cr.name, cr.emoji, cr.skill, cr.context)}
-            onKeyDown={(e) => e.key === "Enter" && onCatchCreature(cr.name, cr.emoji, cr.skill, cr.context)}
+            onClick={() => onCatchCreature(cr)}
+            onKeyDown={(e) => e.key === "Enter" && onCatchCreature(cr)}
             role="button"
             tabIndex={0}
           >
@@ -98,15 +159,15 @@ export default function ARWorldScreen({
       <div className="ar-bottom">
         <div className="ar-hint">👆 Tap a creature to catch it and practice a skill!</div>
         <div className="ar-skill-chips">
-          <div className="ar-chip" style={{ borderColor: "rgba(0,212,255,.4)", color: "var(--cyan)" }}>
-            🐻‍❄️ Breathe Bear — Nearby!
-          </div>
-          <div className="ar-chip" style={{ borderColor: "rgba(255,107,0,.4)", color: "var(--orange)" }}>
-            🦊 Think Fox — Nearby!
-          </div>
-          <div className="ar-chip" style={{ borderColor: "rgba(168,85,247,.4)", color: "var(--purple)" }}>
-            🦉 Speak Owl — Nearby!
-          </div>
+          {creatures.map((cr, index) => (
+            <div
+              key={cr.id ?? `ar-chip-${index}-${cr.emoji}-${cr.name}`}
+              className="ar-chip"
+              style={{ borderColor: `${cr.color}66`, color: cr.color }}
+            >
+              {cr.emoji} {cr.name} — Nearby!
+            </div>
+          ))}
         </div>
       </div>
 
@@ -119,7 +180,7 @@ export default function ARWorldScreen({
           <div className="ar-catch-choices">
             {catchChoices.map((c, i) => (
               <button
-                key={c.t}
+                key={`catch-choice-${i}-${c.t.slice(0, 30)}`}
                 type="button"
                 className={`ar-catch-choice ${pickedIndex === i ? (c.c ? "correct" : "wrong") : ""}`}
                 onClick={() => {

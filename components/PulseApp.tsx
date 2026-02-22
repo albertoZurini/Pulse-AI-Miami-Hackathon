@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { questData } from "@/lib/questData";
 import { arCreatureData } from "@/lib/arCreatureData";
+import type { ARCreatureDisplay } from "@/lib/supabase";
 import type { Quest, QuestChoice } from "@/lib/questData";
 import HomeScreen from "./HomeScreen";
 import QuestScreen from "./QuestScreen";
@@ -154,25 +155,27 @@ export default function PulseApp() {
     [callAI]
   );
 
-  const openARCreature = useCallback(
-    (name: string, emoji: string, skill: string, context: string) => {
-      const d = arCreatureData[emoji];
-      setArCatchName(`${name} appeared!`);
-      setArCatchEmoji(emoji);
-      setArCatchSub(`Practice ${skill} to catch it! ✨`);
-      setArCatchQuestion(d?.q ?? context);
-      setArCatchChoices(d?.choices ?? [
-        { t: "Take a deep breath first", c: true },
-        { t: "Just ignore the feeling", c: false },
-        { t: "Give up immediately", c: false },
-      ]);
-      setArCatchFeedback(null);
-      setArCatchDismissLabel("Close ✕");
-      setArAnswerPicked(null);
-      setArCatchOpen(true);
-    },
-    []
-  );
+  const openARCreature = useCallback((creature: ARCreatureDisplay) => {
+    const d = arCreatureData[creature.emoji];
+    const question = creature.practice_question ?? d?.q ?? creature.context;
+    const choices =
+      creature.choices && creature.choices.length > 0
+        ? creature.choices
+        : d?.choices ?? [
+            { t: "Take a deep breath first", c: true },
+            { t: "Just ignore the feeling", c: false },
+            { t: "Give up immediately", c: false },
+          ];
+    setArCatchName(`${creature.name} appeared!`);
+    setArCatchEmoji(creature.emoji);
+    setArCatchSub(`Practice ${creature.skill} to catch it! ✨`);
+    setArCatchQuestion(question);
+    setArCatchChoices(choices);
+    setArCatchFeedback(null);
+    setArCatchDismissLabel("Close ✕");
+    setArAnswerPicked(null);
+    setArCatchOpen(true);
+  }, []);
 
   const answerARCreature = useCallback(
     async (correct: boolean) => {
