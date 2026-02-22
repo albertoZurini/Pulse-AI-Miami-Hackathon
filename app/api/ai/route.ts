@@ -12,12 +12,13 @@ export async function POST(req: NextRequest) {
       if (type === "chat") return NextResponse.json({ text: "I'm here for you! 💛 Tell me more!" });
       if (type === "quest") return NextResponse.json({ text: (body as { correct?: boolean }).correct ? "YES! That's exactly right! You're amazing! 🎉" : "Good try! Next time, remember to ask directly — it always works better! 💪" });
       if (type === "ar") return NextResponse.json({ text: body.correct ? "🎉 CAUGHT IT! You're amazing!! 🏆" : "💛 Good try! Remember: breathing first always helps!" });
+      if (type === "therapist") return NextResponse.json({ text: "Based on current client data, I recommend prioritizing Marcus today with a warm check-in message. His engagement has dropped significantly this week." });
       return NextResponse.json({ text: "Okay!" });
     }
 
     const body = await req.json();
     const { type, messages, system, prompt } = body as {
-      type: "chat" | "quest" | "ar";
+      type: "chat" | "quest" | "ar" | "therapist";
       messages?: { role: string; content: string }[];
       system?: string;
       prompt?: string;

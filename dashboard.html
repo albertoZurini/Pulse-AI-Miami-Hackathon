@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse Clinical — Therapist Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ═══ SAME ECOSYSTEM VARIABLES AS USER APP ═══ */
+:root {
+  --mg:#FF2D78; --or:#FF6B00; --am:#FFB800; --li:#7ED321;
+  --cy:#00D4FF; --in:#5B2FE8; --pu:#A855F7;
+  --nv:#0F0A2E; --dk:#1A1040; --cd:#221654; --c2:#2A1E6E;
+  --bd:rgba(255,255,255,.08); --tx:#FFF; --mt:rgba(255,255,255,.5);
+  --sidebar:200px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Nunito",sans-serif;background:#050316;color:#fff;min-height:100vh;display:flex;overflow:hidden}
+
+/* ══ ANIMATIONS ══ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes gPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.7;transform:scale(1.06)}}
+@keyframes orbSpin{to{filter:hue-rotate(360deg)}}
+@keyframes blink{from{opacity:1}to{opacity:.2}}
+@keyframes db{0%,80%,100%{transform:scale(.6)}40%{transform:scale(1)}}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes aurora{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+@keyframes confFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(600px) rotate(540deg);opacity:0}}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(255,45,120,.5)}100%{box-shadow:0 0 0 8px rgba(255,45,120,0)}}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(91,47,232,.4);border-radius:2px}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar);background:var(--dk);
+  border-right:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;flex-shrink:0;
+  position:relative;overflow:hidden;
+}
+.sidebar::before{
+  content:"";position:absolute;top:-80px;left:-80px;
+  width:260px;height:260px;
+  background:radial-gradient(circle,rgba(91,47,232,.25),transparent 70%);
+  pointer-events:none;
+}
+.sb-logo{
+  padding:18px 14px 14px;display:flex;align-items:center;gap:9px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.sb-logo-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--in),var(--mg));
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  box-shadow:0 4px 14px rgba(91,47,232,.5);flex-shrink:0;
+}
+.sb-logo-txt{font-family:"Fredoka One",cursive;font-size:18px;line-height:1}
+.sb-logo-badge{
+  font-size:7px;font-weight:900;letter-spacing:1px;
+  background:rgba(91,47,232,.3);border:1px solid rgba(91,47,232,.4);
+  border-radius:4px;padding:2px 5px;color:var(--pu);
+  text-transform:uppercase;margin-top:2px;
+}
+.sb-section{font-size:8px;font-weight:900;color:rgba(255,255,255,.22);letter-spacing:2px;text-transform:uppercase;padding:12px 14px 4px}
+.sb-item{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;margin:1px 6px;
+  border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;
+  color:rgba(255,255,255,.45);transition:all .15s;position:relative;
+}
+.sb-item:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.75)}
+.sb-item.active{background:rgba(91,47,232,.18);color:#fff}
+.sb-item.active::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:linear-gradient(180deg,var(--cy),var(--in));border-radius:0 2px 2px 0}
+.sb-ico{font-size:15px;width:20px;text-align:center}
+.sb-badge{margin-left:auto;background:var(--mg);color:white;border-radius:20px;padding:1px 6px;font-size:8px;font-weight:900;animation:pulse-ring 1.5s ease infinite}
+.sb-spacer{flex:1}
+.sb-user{
+  padding:12px 14px;border-top:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+}
+.sb-user-av{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--in),var(--cy));
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+}
+.sb-user-nm{font-size:11px;font-weight:800;line-height:1.2}
+.sb-user-role{font-size:9px;color:var(--mt);margin-top:1px}
+
+/* ══ MAIN ══ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{
+  height:56px;background:var(--dk);border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;
+  position:relative;overflow:hidden;
+}
+.topbar::after{
+  content:"";position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(91,47,232,.5),rgba(0,212,255,.3),transparent);
+}
+.topbar-title{font-family:"Fredoka One",cursive;font-size:18px;flex:1;background:linear-gradient(135deg,#fff,rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ai-status{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(126,211,33,.08);border:1px solid rgba(126,211,33,.2);
+  border-radius:20px;padding:4px 10px;font-size:9px;font-weight:900;color:var(--li);
+  letter-spacing:.5px;
+}
+.ai-dot{width:5px;height:5px;border-radius:50%;background:var(--li);animation:blink .8s ease infinite alternate}
+.tb-btn{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:6px 12px;font-size:11px;font-weight:800;
+  color:rgba(255,255,255,.7);cursor:pointer;font-family:"Nunito",sans-serif;
+  transition:all .15s;display:flex;align-items:center;gap:5px;
+}
+.tb-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.tb-btn.primary{
+  background:linear-gradient(135deg,var(--in),var(--pu));
+  border-color:transparent;color:white;
+  box-shadow:0 3px 14px rgba(91,47,232,.35);
+}
+.tb-btn.primary:hover{opacity:.9}
+
+/* ══ CONTENT AREA ══ */
+.content{flex:1;overflow-y:auto;padding:20px}
+.view{display:none;animation:fadeUp .22s ease}
+.view.active{display:block}
+
+/* ══ METRICS ROW ══ */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.metric{
+  background:var(--cd);border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:16px;position:relative;overflow:hidden;
+}
+.metric::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--mc,var(--in))}
+.metric::after{content:"";position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;background:var(--mc,var(--in));opacity:.07;transform:translate(20px,-20px)}
+.m-val{font-family:"Fredoka One",cursive;font-size:34px;line-height:1;margin-bottom:2px}
+.m-lbl{font-size:10px;color:var(--mt);font-weight:700}
+.m-chg{font-size:9px;font-weight:900;margin-top:8px}
+.m-chg.up{color:var(--li)}.m-chg.dn{color:var(--mg)}
+
+/* ══ PANEL / CARD ══ */
+.panel{background:var(--cd);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.panel-hdr{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:8px}
+.panel-ttl{font-family:"Fredoka One",cursive;font-size:14px;flex:1}
+.p-act{
+  background:none;border:1px solid rgba(255,255,255,.09);border-radius:8px;
+  padding:4px 10px;font-size:10px;font-weight:800;color:var(--mt);
+  cursor:pointer;font-family:"Nunito",sans-serif;transition:all .15s;
+}
+.p-act:hover{border-color:var(--cy);color:var(--cy)}
+.p-act.hi{background:linear-gradient(135deg,var(--in),var(--pu));border:none;color:white;padding:5px 12px;font-size:11px}
+.p-act.hi:hover{opacity:.9}
+
+/* ══ CLIENT TABLE ══ */
+.ctable{width:100%;border-collapse:collapse}
+.ctable th{text-align:left;font-size:8px;font-weight:900;color:rgba(255,255,255,.2);letter-spacing:2px;text-transform:uppercase;padding:9px 18px;border-bottom:1px solid rgba(255,255,255,.04)}
+.ctable td{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;vertical-align:middle}
+.ctable tr:last-child td{border-bottom:none}
+.ctable tr.crow:hover td{background:rgba(255,255,255,.02);cursor:pointer}
+.c-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.c-nm{font-weight:800;font-size:12px}.c-sub{font-size:10px;color:var(--mt);margin-top:1px}
+
+/* ══ TAGS ══ */
+.tag{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:2px 8px;font-size:9px;font-weight:900}
+.tag.green{background:rgba(126,211,33,.12);color:var(--li);border:1px solid rgba(126,211,33,.2)}
+.tag.amber{background:rgba(255,184,0,.12);color:var(--am);border:1px solid rgba(255,184,0,.2)}
+.tag.red{background:rgba(255,45,120,.12);color:var(--mg);border:1px solid rgba(255,45,120,.2)}
+.tag.blue{background:rgba(0,212,255,.1);color:var(--cy);border:1px solid rgba(0,212,255,.2)}
+.tag.purple{background:rgba(168,85,247,.12);color:var(--pu);border:1px solid rgba(168,85,247,.2)}
+.tag.live{background:rgba(255,45,120,.15);color:var(--mg);border:1px solid rgba(255,45,120,.25);animation:blink .9s ease infinite alternate}
+
+/* ══ PROGRESS BAR ══ */
+.pb{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.pbf{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ══ ALERT CARD ══ */
+.alert-c{
+  background:rgba(255,45,120,.06);border:1px solid rgba(255,45,120,.2);
+  border-radius:14px;padding:13px 15px;margin-bottom:10px;
+  display:flex;align-items:flex-start;gap:10px;animation:fadeUp .3s ease;
+}
+.alert-c.warn{background:rgba(255,184,0,.06);border-color:rgba(255,184,0,.2)}
+.alert-c.info{background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.2)}
+.alert-c.good{background:rgba(126,211,33,.05);border-color:rgba(126,211,33,.2)}
+.al-ico{font-size:20px;flex-shrink:0;margin-top:1px}
+.al-ttl{font-family:"Fredoka One",cursive;font-size:13px;color:var(--mg);margin-bottom:2px}
+.alert-c.warn .al-ttl{color:var(--am)}.alert-c.info .al-ttl{color:var(--cy)}.alert-c.good .al-ttl{color:var(--li)}
+.al-txt{font-size:11px;color:var(--mt);line-height:1.5}
+.al-act{
+  margin-left:auto;flex-shrink:0;background:rgba(255,45,120,.15);
+  border:1px solid rgba(255,45,120,.25);border-radius:8px;
+  padding:5px 10px;font-size:10px;font-weight:800;color:var(--mg);
+  cursor:pointer;font-family:"Nunito",sans-serif;white-space:nowrap;
+}
+.alert-c.good .al-act{background:rgba(126,211,33,.12);border-color:rgba(126,211,33,.2);color:var(--li)}
+
+/* ══ AI INSIGHT CARD ══ */
+.insight{
+  background:linear-gradient(135deg,rgba(91,47,232,.12),rgba(0,212,255,.05));
+  border:1px solid rgba(91,47,232,.2);border-radius:14px;padding:14px;margin-bottom:10px;
+}
+.ins-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ins-orb{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,var(--in),var(--cy));
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  animation:orbSpin 4s linear infinite;flex-shrink:0;
+}
+.ins-lbl{font-size:8px;font-weight:900;color:var(--pu);letter-spacing:1px;text-transform:uppercase}
+.ins-nm{font-family:"Fredoka One",cursive;font-size:13px;margin-top:1px}
+.ins-txt{font-size:11px;color:var(--mt);line-height:1.6}
+.ins-btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.ins-btn{
+  background:rgba(91,47,232,.15);border:1px solid rgba(91,47,232,.25);
+  border-radius:8px;padding:5px 10px;font-size:10px;font-weight:800;color:var(--pu);
+  cursor:pointer;font-family:"Nunito",sans-serif;transition:all .15s;
+}
+.ins-btn:hover{background:rgba(91,47,232,.25)}
+.ins-btn.cta{background:linear-gradient(135deg,var(--in),var(--pu));border:none;color:white}
+
+/* ══ CLIENT DETAIL ══ */
+.cd-hero{
+  background:linear-gradient(135deg,var(--cd),var(--c2));
+  border:1px solid rgba(255,255,255,.06);border-radius:16px;
+  padding:20px;margin-bottom:14px;display:flex;align-items:flex-start;gap:16px;
+  position:relative;overflow:hidden;
+}
+.cd-hero::before{
+  content:"";position:absolute;top:-40px;right:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(91,47,232,.2),transparent 70%);
+}
+.cd-av{
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(91,47,232,.3),rgba(0,212,255,.2));
+  border:2px solid rgba(91,47,232,.4);
+  display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;
+}
+.cd-nm{font-family:"Fredoka One",cursive;font-size:22px;margin-bottom:3px}
+.cd-meta{font-size:11px;color:var(--mt);margin-bottom:9px}
+.cd-tags{display:flex;gap:5px;flex-wrap:wrap}
+.cd-acts{margin-left:auto;display:flex;gap:7px;flex-direction:column;align-items:flex-end;position:relative;z-index:1}
+.cd-stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.cd-stat{background:var(--cd);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:14px;text-align:center}
+.cds-val{font-family:"Fredoka One",cursive;font-size:26px;line-height:1}
+.cds-lbl{font-size:9px;color:var(--mt);font-weight:700;margin-top:3px}
+.cd-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.back-btn{
+  display:inline-flex;align-items:center;gap:5px;background:none;border:none;
+  color:var(--mt);font-size:11px;font-weight:800;cursor:pointer;
+  padding:0;margin-bottom:14px;font-family:"Nunito",sans-serif;transition:color .15s;
+}
+.back-btn:hover{color:#fff}
+
+/* ══ GOALS / PLAN ══ */
+.goal-row{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);
+  border-radius:12px;padding:13px;margin-bottom:9px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.goal-ico{font-size:20px;flex-shrink:0;margin-top:1px}
+.goal-ttl{font-family:"Fredoka One",cursive;font-size:13px;margin-bottom:2px}
+.goal-desc{font-size:10px;color:var(--mt);line-height:1.5;margin-bottom:7px}
+.goal-prog{display:flex;align-items:center;gap:7px}
+.goal-pct{font-size:10px;font-weight:900;white-space:nowrap}
+
+/* ══ TIMELINE ══ */
+.tl{padding:4px 18px 14px;position:relative}
+.tl::before{content:"";position:absolute;left:34px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.06)}
+.tl-item{display:flex;gap:10px;padding:8px 0;position:relative}
+.tl-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--in);
+  border:2px solid #050316;flex-shrink:0;margin-top:5px;position:relative;z-index:1;
+}
+.tl-date{font-size:9px;color:var(--mt);font-family:"Nunito",monospace;white-space:nowrap;width:55px;flex-shrink:0;margin-top:3px}
+.tl-txt{font-size:11px;color:rgba(255,255,255,.8);line-height:1.5}
+.tl-type{font-size:8px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+
+/* ══ QUEST ASSIGN CARD ══ */
+.qac{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:12px;margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;
+}
+.qac.assigned{border-color:rgba(126,211,33,.2);background:rgba(126,211,33,.04)}
+.qac-emj{font-size:22px;flex-shrink:0}
+.qac-nm{font-family:"Fredoka One",cursive;font-size:12px;margin-bottom:1px}
+.qac-desc{font-size:10px;color:var(--mt)}
+.qac-acts{margin-left:auto;display:flex;gap:5px;align-items:center}
+.assign-btn{
+  background:rgba(126,211,33,.1);border:1px solid rgba(126,211,33,.2);
+  border-radius:8px;padding:4px 9px;font-size:10px;font-weight:800;color:var(--li);
+  cursor:pointer;font-family:"Nunito",sans-serif;transition:all .15s;
+}
+.assign-btn:hover{background:rgba(126,211,33,.2)}
+
+/* ══ LIVE SESSION ══ */
+.sess-card{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:13px;padding:14px;margin-bottom:9px;
+  display:flex;align-items:center;gap:12px;
+}
+.sess-av{width:40px;height:40px;border-radius:50%;background:rgba(91,47,232,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sess-nm{font-weight:800;font-size:12px;margin-bottom:2px}
+.sess-loc{font-size:10px;color:var(--mt)}
+.sess-right{margin-left:auto;text-align:right}
+.sess-time{font-family:"Nunito",sans-serif;font-size:11px;color:var(--cy);font-weight:800}
+.sess-mood{font-size:18px;margin-top:2px}
+
+/* ══ CHART ══ */
+.mini-chart{height:50px;display:flex;align-items:flex-end;gap:3px}
+.chart-bar{flex:1;border-radius:3px 3px 0 0;min-height:3px;transition:height .5s ease}
+.chart-lbl-row{display:flex;justify-content:space-between;padding:3px 0 0}
+.chart-lbl{font-size:8px;color:rgba(255,255,255,.2);font-weight:700}
+
+/* ══ 2-COL LAYOUT ══ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+
+/* ══ AI CHAT SIDEBAR ══ */
+.ai-panel{
+  width:280px;background:var(--dk);border-left:1px solid rgba(255,255,255,.05);
+  display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden;
+}
+.ai-panel::before{
+  content:"";position:absolute;bottom:-60px;right:-60px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(91,47,232,.2),transparent 70%);pointer-events:none;
+}
+.aip-hdr{
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:center;gap:8px;
+}
+.aip-orb{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--in),var(--cy));
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  box-shadow:0 0 12px rgba(91,47,232,.5);animation:orbSpin 4s linear infinite;flex-shrink:0;
+}
+.aip-ttl{font-family:"Fredoka One",cursive;font-size:14px}
+.aip-sub{font-size:9px;color:var(--mt);margin-top:1px}
+.aip-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.aip-msg{padding:9px 11px;border-radius:12px;font-size:11px;line-height:1.6;max-width:92%}
+.aip-msg.ai{background:var(--c2);border:1px solid rgba(255,255,255,.06);align-self:flex-start;border-radius:12px 12px 12px 3px}
+.aip-msg.user{background:linear-gradient(135deg,var(--in),var(--pu));align-self:flex-end;border-radius:12px 12px 3px 12px}
+.aip-msg-hdr{font-size:8px;font-weight:900;color:var(--pu);letter-spacing:.5px;margin-bottom:3px}
+.ai-dots{display:flex;gap:3px;padding:2px 0}
+.ai-dots span{width:5px;height:5px;border-radius:50%;background:var(--pu);animation:db 1s ease infinite;display:block}
+.ai-dots span:nth-child(2){animation-delay:.2s}.ai-dots span:nth-child(3){animation-delay:.4s}
+.aip-chips{padding:0 12px 8px;display:flex;flex-wrap:wrap;gap:5px}
+.aip-chip{
+  background:rgba(91,47,232,.1);border:1px solid rgba(91,47,232,.2);
+  border-radius:20px;padding:4px 9px;font-size:9px;font-weight:800;color:var(--pu);
+  cursor:pointer;transition:all .15s;
+}
+.aip-chip:hover{background:rgba(91,47,232,.22)}
+.aip-bar{padding:8px 12px 14px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:6px}
+.aip-inp{
+  flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;padding:8px 10px;color:#fff;
+  font-family:"Nunito",sans-serif;font-size:11px;
+}
+.aip-inp:focus{outline:none;border-color:rgba(91,47,232,.4)}
+.aip-send{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,var(--in),var(--pu));
+  border:none;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ══ MODAL ══ */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);z-index:200;
+  display:none;align-items:center;justify-content:center;
+  animation:fadeUp .2s ease;
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--cd);border:1px solid rgba(91,47,232,.25);
+  border-radius:20px;padding:24px;width:100%;max-width:500px;
+  max-height:88vh;overflow-y:auto;animation:popIn .25s ease;
+  position:relative;
+}
+.modal::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--in),var(--cy),var(--mg));border-radius:20px 20px 0 0;
+}
+.modal-ttl{font-family:"Fredoka One",cursive;font-size:20px;margin-bottom:4px}
+.modal-sub{font-size:11px;color:var(--mt);margin-bottom:20px;line-height:1.5}
+.f-row{margin-bottom:14px}
+.f-lbl{font-size:10px;font-weight:900;color:var(--mt);margin-bottom:5px;display:block;letter-spacing:.5px;text-transform:uppercase}
+.f-inp,.f-sel,.f-ta{
+  width:100%;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);border-radius:10px;
+  padding:9px 12px;color:#fff;
+  font-family:"Nunito",sans-serif;font-size:12px;
+}
+.f-inp:focus,.f-sel:focus,.f-ta:focus{outline:none;border-color:rgba(91,47,232,.5)}
+.f-ta{resize:vertical;min-height:70px}
+.f-sel{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.f-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f-check{display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:5px 0}
+.f-check input[type=checkbox]{accent-color:var(--in);width:14px;height:14px}
+.modal-foot{display:flex;gap:8px;margin-top:20px}
+.modal-btn{
+  flex:1;border:none;border-radius:11px;padding:11px;
+  font-family:"Fredoka One",cursive;font-size:15px;cursor:pointer;transition:all .15s;
+}
+.modal-btn.cancel{background:rgba(255,255,255,.07);color:var(--mt)}
+.modal-btn.cancel:hover{background:rgba(255,255,255,.12)}
+.modal-btn.save{background:linear-gradient(135deg,var(--in),var(--pu));color:white;box-shadow:0 4px 16px rgba(91,47,232,.35)}
+.modal-btn.save:hover{opacity:.92}
+
+/* ══ REPORT SECTION ══ */
+.report-ttl{
+  font-family:"Fredoka One",cursive;font-size:15px;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.report-ttl::before{content:"";width:3px;height:18px;border-radius:2px;background:linear-gradient(180deg,var(--cy),var(--in));display:block}
+.r-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.r-box{background:var(--cd);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:14px;text-align:center}
+.r-val{font-family:"Fredoka One",cursive;font-size:28px}.r-lbl{font-size:9px;color:var(--mt);font-weight:700;margin-top:3px}
+
+/* ══ MSG THREAD ══ */
+.msg-item{
+  display:flex;gap:10px;padding:12px 18px;
+  border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background .1s;
+}
+.msg-item:hover{background:rgba(255,255,255,.02)}
+.msg-item.unread{background:rgba(91,47,232,.05)}
+.msg-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.msg-nm{font-size:12px;font-weight:800;margin-bottom:1px}
+.msg-prev{font-size:10px;color:var(--mt);line-height:1.4}
+.msg-time{font-size:9px;color:rgba(255,255,255,.2);white-space:nowrap;margin-left:auto}
+.msg-dot{width:6px;height:6px;border-radius:50%;background:var(--pu);flex-shrink:0;margin-top:4px}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--cd);border:1px solid var(--li);border-radius:12px;
+  padding:10px 18px;font-size:12px;font-weight:800;color:var(--li);
+  z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:slideUp .3s ease;
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">🧠</div>
+    <div>
+      <div class="sb-logo-txt">Pulse</div>
+      <div class="sb-logo-badge">Clinical</div>
+    </div>
+  </div>
+
+  <div class="sb-section">Overview</div>
+  <div class="sb-item active" onclick="nav('dashboard',this)"><span class="sb-ico">⚡</span>Dashboard</div>
+  <div class="sb-item" onclick="nav('alerts',this)"><span class="sb-ico">🔔</span>Alerts<span class="sb-badge">3</span></div>
+  <div class="sb-item" onclick="nav('live',this)"><span class="sb-ico">👁️</span>Live Monitor</div>
+
+  <div class="sb-section">Clients</div>
+  <div class="sb-item" onclick="nav('clients',this)"><span class="sb-ico">👥</span>All Clients</div>
+  <div class="sb-item" onclick="nav('quests',this)"><span class="sb-ico">⚔️</span>Quest Library</div>
+  <div class="sb-item" onclick="nav('plans',this)"><span class="sb-ico">📋</span>Treatment Plans</div>
+
+  <div class="sb-section">Data</div>
+  <div class="sb-item" onclick="nav('reports',this)"><span class="sb-ico">📊</span>Reports</div>
+  <div class="sb-item" onclick="nav('messages',this)"><span class="sb-ico">✉️</span>Messages<span class="sb-badge" style="background:var(--cy);animation:none">5</span></div>
+
+  <div class="sb-spacer"></div>
+  <div class="sb-user">
+    <div class="sb-user-av">👩‍⚕️</div>
+    <div>
+      <div class="sb-user-nm">Dr. Ramírez</div>
+      <div class="sb-user-role">Licensed Therapist</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topTitle">Dashboard</div>
+    <div class="ai-status"><div class="ai-dot"></div>Pulse AI Active</div>
+    <button class="tb-btn" onclick="openModal('noteModal')">📝 Add Note</button>
+    <button class="tb-btn" onclick="openModal('msgModal')">✉️ Message</button>
+    <button class="tb-btn primary" onclick="openModal('addClientModal')">+ New Client</button>
+  </div>
+
+  <div class="content" id="mainContent">
+
+    <!-- ══════ DASHBOARD ══════ -->
+    <div class="view active" id="view-dashboard">
+      <div class="metrics">
+        <div class="metric" style="--mc:var(--in)">
+          <div class="m-val" style="color:var(--pu)">12</div>
+          <div class="m-lbl">Active Clients</div>
+          <div class="m-chg up">↑ 2 this month</div>
+        </div>
+        <div class="metric" style="--mc:var(--li)">
+          <div class="m-val" style="color:var(--li)">74%</div>
+          <div class="m-lbl">Avg Quest Completion</div>
+          <div class="m-chg up">↑ 8% vs last week</div>
+        </div>
+        <div class="metric" style="--mc:var(--cy)">
+          <div class="m-val" style="color:var(--cy)">6.8d</div>
+          <div class="m-lbl">Avg Streak</div>
+          <div class="m-chg up">↑ 1.2 days</div>
+        </div>
+        <div class="metric" style="--mc:var(--mg)">
+          <div class="m-val" style="color:var(--mg)">2</div>
+          <div class="m-lbl">Needs Attention</div>
+          <div class="m-chg dn">↑ 1 new alert</div>
+        </div>
+      </div>
+
+      <div class="alert-c">
+        <div class="al-ico">😔</div>
+        <div><div class="al-ttl">Marcus W. — Mood dip detected</div>
+        <div class="al-txt">AI flagged 3 consecutive "SAD" check-ins. Quest completion dropped from 80% → 20% this week. Last session: 4 days ago.</div></div>
+        <button class="al-act" onclick="openClient('marcus')">View Client →</button>
+      </div>
+      <div class="alert-c warn">
+        <div class="al-ico">📉</div>
+        <div><div class="al-ttl">Jordan K. — Skipped 2 assigned quests</div>
+        <div class="al-txt">Both "Speak Up at Work" quests missed this week — unusual for Jordan who normally completes 90%+.</div></div>
+        <button class="al-act" style="background:rgba(255,184,0,.12);border-color:rgba(255,184,0,.2);color:var(--am)">Review →</button>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">📈 This Week's Completions</div></div>
+          <div style="padding:14px 18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+              <span style="font-size:10px;color:var(--mt)">Quest completions across all clients</span>
+              <span class="tag green">+23 this week</span>
+            </div>
+            <div class="mini-chart" id="weekChart"></div>
+            <div class="chart-lbl-row">
+              <span class="chart-lbl">Mon</span><span class="chart-lbl">Tue</span><span class="chart-lbl">Wed</span>
+              <span class="chart-lbl">Thu</span><span class="chart-lbl">Fri</span><span class="chart-lbl">Sat</span><span class="chart-lbl">Sun</span>
+            </div>
+          </div>
+          <div style="padding:0 18px 14px">
+            <div style="font-size:10px;color:var(--mt);margin-bottom:8px;font-weight:700">By Skill Area</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;width:70px">🗣️ Speak Up</span><div class="pb" style="flex:1"><div class="pbf" style="width:78%;background:linear-gradient(90deg,var(--mg),var(--or))"></div></div><span style="font-size:10px;color:var(--mg);font-weight:800">78%</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;width:70px">💭 Think It</span><div class="pb" style="flex:1"><div class="pbf" style="width:65%;background:linear-gradient(90deg,var(--in),var(--pu))"></div></div><span style="font-size:10px;color:var(--pu);font-weight:800">65%</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;width:70px">☁️ Calm</span><div class="pb" style="flex:1"><div class="pbf" style="width:82%;background:linear-gradient(90deg,var(--cy),var(--in))"></div></div><span style="font-size:10px;color:var(--cy);font-weight:800">82%</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;width:70px">🌎 Real Life</span><div class="pb" style="flex:1"><div class="pbf" style="width:41%;background:linear-gradient(90deg,var(--li),var(--cy))"></div></div><span style="font-size:10px;color:var(--li);font-weight:800">41%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">✦ AI Insights</div><span class="tag purple">Auto-generated</span></div>
+          <div style="padding:12px">
+            <div class="insight">
+              <div class="ins-hdr"><div class="ins-orb">✦</div><div><div class="ins-lbl">Pattern Detected</div><div class="ins-nm">Marcus needs re-engagement</div></div></div>
+              <div class="ins-txt">Marcus's engagement dropped after missing Thursday. Historical data shows best completion Tue/Wed. Suggest rescheduling or a Sparky check-in today.</div>
+              <div class="ins-btns"><button class="ins-btn cta" onclick="openClient('marcus')">View Marcus</button><button class="ins-btn" onclick="openModal('msgModal')">Message</button></div>
+            </div>
+            <div class="insight">
+              <div class="ins-hdr"><div class="ins-orb">✦</div><div><div class="ins-lbl">Milestone Ready</div><div class="ins-nm">Jordan — advance to Stage 2?</div></div></div>
+              <div class="ins-txt">Jordan logged 5 real-life skill transfers this month — a personal record. Data suggests readiness for Stage 2: community integration goals.</div>
+              <div class="ins-btns"><button class="ins-btn cta" onclick="openClient('jordan')">Review Plan</button><button class="ins-btn" onclick="openModal('noteModal')">Add Note</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-ttl">👥 Client Snapshot</div><button class="p-act" onclick="nav('clients',null)">View All →</button></div>
+        <table class="ctable"><thead><tr><th>Client</th><th>Status</th><th>Quest Progress</th><th>Streak</th><th>Mood</th><th>Last Active</th></tr></thead>
+        <tbody id="dashRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ══════ CLIENTS ══════ -->
+    <div class="view" id="view-clients">
+      <div id="clientList">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <input class="f-inp" placeholder="🔍  Search clients..." style="max-width:240px">
+          <div style="display:flex;gap:6px"><span class="tag green">Active (10)</span><span class="tag red">At-Risk (2)</span></div>
+          <button class="tb-btn primary" style="margin-left:auto" onclick="openModal('addClientModal')">+ Add Client</button>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">All Clients</div></div>
+          <table class="ctable"><thead><tr><th>Client</th><th>Age</th><th>Primary Goal</th><th>Status</th><th>Quest %</th><th>Streak</th><th>Last Active</th><th></th></tr></thead>
+          <tbody id="allRows"></tbody></table>
+        </div>
+      </div>
+      <div id="clientDetail" style="display:none"></div>
+    </div>
+
+    <!-- ══════ QUEST LIBRARY ══════ -->
+    <div class="view" id="view-quests">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Fredoka One',cursive;font-size:18px">Quest Library</div>
+        <span class="tag purple">28 quests</span>
+        <button class="tb-btn primary" style="margin-left:auto" onclick="openModal('addQuestModal')">+ Create Quest</button>
+      </div>
+      <div class="three-col">
+        <div class="panel">
+          <div class="panel-hdr" style="border-bottom-color:rgba(255,45,120,.15)"><div class="panel-ttl" style="color:var(--mg)">🗣️ Speak Up</div><span class="tag red">8 quests</span></div>
+          <div style="padding:10px">
+            <div class="qac assigned"><div class="qac-emj">🏢</div><div><div class="qac-nm">Ask for Help at Work</div><div class="qac-desc">7 clients assigned</div></div><span class="tag green">Active</span></div>
+            <div class="qac"><div class="qac-emj">🍽️</div><div><div class="qac-nm">Order at a Restaurant</div><div class="qac-desc">Self-advocacy in public</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">👩‍⚕️</div><div><div class="qac-nm">Talk to a Doctor</div><div class="qac-desc">Medical self-advocacy</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">🚌</div><div><div class="qac-nm">Ask for Bus Help</div><div class="qac-desc">Public transport</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr" style="border-bottom-color:rgba(168,85,247,.15)"><div class="panel-ttl" style="color:var(--pu)">💭 Think It</div><span class="tag purple">7 quests</span></div>
+          <div style="padding:10px">
+            <div class="qac assigned"><div class="qac-emj">🧠</div><div><div class="qac-nm">Flip a Sneaky Thought</div><div class="qac-desc">5 clients assigned</div></div><span class="tag green">Active</span></div>
+            <div class="qac"><div class="qac-emj">📔</div><div><div class="qac-nm">Worry Journal</div><div class="qac-desc">Written thought tracking</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">🌤️</div><div><div class="qac-nm">Silver Lining Finder</div><div class="qac-desc">Positive reframing</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">🎭</div><div><div class="qac-nm">Feeling Name Game</div><div class="qac-desc">Emotion identification</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr" style="border-bottom-color:rgba(0,212,255,.15)"><div class="panel-ttl" style="color:var(--cy)">☁️ Calm Zone</div><span class="tag blue">6 quests</span></div>
+          <div style="padding:10px">
+            <div class="qac assigned"><div class="qac-emj">🌬️</div><div><div class="qac-nm">Box Breathing (5 rounds)</div><div class="qac-desc">9 clients assigned</div></div><span class="tag green">Active</span></div>
+            <div class="qac"><div class="qac-emj">💪</div><div><div class="qac-nm">Body Relax (PMR)</div><div class="qac-desc">Progressive muscle relax</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">🍃</div><div><div class="qac-nm">Worry Float</div><div class="qac-desc">Mindful worry release</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">🌊</div><div><div class="qac-nm">5-4-3-2-1 Grounding</div><div class="qac-desc">Sensory grounding</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr" style="border-bottom-color:rgba(126,211,33,.15)"><div class="panel-ttl" style="color:var(--li)">🌎 Real World</div><span class="tag green">4 quests</span></div>
+          <div style="padding:10px">
+            <div class="qac"><div class="qac-emj">🎯</div><div><div class="qac-nm">Real Life Skill Transfer</div><div class="qac-desc">Client confirms skill used in real life</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+            <div class="qac"><div class="qac-emj">🤝</div><div><div class="qac-nm">Community Connection</div><div class="qac-desc">Interact with someone new</div></div><div class="qac-acts"><button class="assign-btn" onclick="openModal('assignModal')">Assign</button></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">✦ AI Quest Builder</div><span class="tag purple">Auto-suggest</span></div>
+          <div style="padding:12px">
+            <div class="insight">
+              <div class="ins-hdr"><div class="ins-orb">✦</div><div><div class="ins-lbl">Suggested for Marcus</div><div class="ins-nm" style="font-size:12px">Gradual Exposure: Bus</div></div></div>
+              <div class="ins-txt">Based on Marcus's fear of public transport and progress in Speak Up, a bus-help quest may be timely.</div>
+              <div class="ins-btns"><button class="ins-btn cta" onclick="openModal('addQuestModal')">Create Quest</button><button class="ins-btn">Dismiss</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ TREATMENT PLANS ══════ -->
+    <div class="view" id="view-plans">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Fredoka One',cursive;font-size:18px">Treatment Plans</div>
+        <button class="tb-btn primary" style="margin-left:auto" onclick="openModal('addPlanModal')">+ New Plan</button>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-ttl">Marcus Williams — Active Plan</div>
+          <div style="display:flex;gap:6px"><span class="tag amber">Stage 1</span><button class="p-act" onclick="openModal('addPlanModal')">Edit</button></div>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:11px;color:var(--mt);line-height:1.6;background:rgba(91,47,232,.1);border:1px solid rgba(91,47,232,.15);border-radius:10px;padding:12px;margin-bottom:14px;border-left:3px solid var(--in)">
+            <strong style="color:#fff">Clinical Summary:</strong> Marcus (22) presents with mild ID, comorbid anxiety. Primary goals: self-advocacy at work/community, emotional regulation, reducing avoidance. Adapted CBT with gamified reinforcement via Pulse app. Weekly session + 5x/week app-based quests.
+          </div>
+          <div class="goal-row">
+            <div class="goal-ico">🗣️</div>
+            <div style="flex:1">
+              <div class="goal-ttl">Goal 1: Self-Advocacy (Speak Up)</div>
+              <div class="goal-desc">Practice asking for help in work, community, and medical contexts. Target: 3x per week in app + 1x real-world transfer per month.</div>
+              <div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:68%;background:linear-gradient(90deg,var(--mg),var(--or))"></div></div><span class="goal-pct" style="color:var(--mg)">68% — Stage 1</span></div>
+            </div>
+          </div>
+          <div class="goal-row">
+            <div class="goal-ico">💭</div>
+            <div style="flex:1">
+              <div class="goal-ttl">Goal 2: Thought Flipping (Cognitive Reframing)</div>
+              <div class="goal-desc">Identify and challenge automatic negative thoughts. Complete "Flip a Sneaky Thought" 2x per week. Therapist reviews AI Sparky chat logs monthly.</div>
+              <div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:45%;background:linear-gradient(90deg,var(--in),var(--pu))"></div></div><span class="goal-pct" style="color:var(--pu)">45% — Building</span></div>
+            </div>
+          </div>
+          <div class="goal-row">
+            <div class="goal-ico">🧘</div>
+            <div style="flex:1">
+              <div class="goal-ttl">Goal 3: Anxiety Regulation (Calm Zone)</div>
+              <div class="goal-desc">Daily breathing practice. PMR 3x/week. Target: client self-initiates calm practice without prompting within 60 days.</div>
+              <div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:81%;background:linear-gradient(90deg,var(--cy),var(--in))"></div></div><span class="goal-pct" style="color:var(--cy)">81% — Strong</span></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)">
+            <div style="font-size:10px;color:var(--mt);font-weight:900;margin-bottom:7px;letter-spacing:.5px">THIS WEEK'S QUESTS</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="tag green">✅ Ask for Help at Work</span>
+              <span class="tag green">✅ Box Breathing</span>
+              <span class="tag amber">⏳ Flip a Sneaky Thought</span>
+              <span class="tag red">❌ Real Life Transfer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-ttl">Jordan Kim — Active Plan</div>
+          <div style="display:flex;gap:6px"><span class="tag green">Stage 2</span><button class="p-act">Edit</button></div>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:11px;color:var(--mt);line-height:1.6;background:rgba(126,211,33,.06);border:1px solid rgba(126,211,33,.15);border-radius:10px;padding:12px;margin-bottom:14px;border-left:3px solid var(--li)">
+            <strong style="color:#fff">Clinical Summary:</strong> Jordan (19) mild ID, primary anxiety around school and social situations. Strong progress in thought-flipping — 5 real-world transfers this month. Advancing to Stage 2: community integration through Social Worlds and group quests.
+          </div>
+          <div class="goal-row">
+            <div class="goal-ico">🌎</div>
+            <div style="flex:1">
+              <div class="goal-ttl">Goal 1: Community Integration (Stage 2)</div>
+              <div class="goal-desc">Engage in Social World chat rooms 3x/week. Participate in Group Quests. Aim for 1 peer connection per month.</div>
+              <div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:55%;background:linear-gradient(90deg,var(--li),var(--cy))"></div></div><span class="goal-pct" style="color:var(--li)">55% — Progressing</span></div>
+            </div>
+          </div>
+          <div class="goal-row">
+            <div class="goal-ico">💼</div>
+            <div style="flex:1">
+              <div class="goal-ttl">Goal 2: Vocational Readiness</div>
+              <div class="goal-desc">Complete "Ask for Help at Work" and "Order at a Restaurant." Practice communication in structured settings before job placement program.</div>
+              <div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:72%;background:linear-gradient(90deg,var(--am),var(--or))"></div></div><span class="goal-pct" style="color:var(--am)">72% — On Track</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ REPORTS ══════ -->
+    <div class="view" id="view-reports">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Fredoka One',cursive;font-size:18px">Reports &amp; Analytics</div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="tb-btn" onclick="genReport()">✦ Generate AI Report</button>
+          <button class="tb-btn primary">↓ Export PDF</button>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric" style="--mc:var(--li)"><div class="m-val" style="color:var(--li)">89</div><div class="m-lbl">Quests Completed</div><div class="m-chg up">↑ 23 this week</div></div>
+        <div class="metric" style="--mc:var(--cy)"><div class="m-val" style="color:var(--cy)">47</div><div class="m-lbl">Calm Sessions</div><div class="m-chg up">↑ 12% avg/client</div></div>
+        <div class="metric" style="--mc:var(--am)"><div class="m-val" style="color:var(--am)">18</div><div class="m-lbl">Real Life Transfers</div><div class="m-chg up">↑ 6 this month</div></div>
+        <div class="metric" style="--mc:var(--pu)"><div class="m-val" style="color:var(--pu)">31</div><div class="m-lbl">Creatures Caught</div><div class="m-chg up">↑ All-time high</div></div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">📊 Monthly Progress — All Clients</div></div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:9px">
+            <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span>🗣️ Speak Up</span><span style="color:var(--mg)">78%</span></div><div class="pb" style="height:7px"><div class="pbf" style="width:78%;background:linear-gradient(90deg,var(--mg),var(--or))"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span>💭 Think It</span><span style="color:var(--pu)">65%</span></div><div class="pb" style="height:7px"><div class="pbf" style="width:65%;background:linear-gradient(90deg,var(--in),var(--pu))"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span>☁️ Calm Zone</span><span style="color:var(--cy)">82%</span></div><div class="pb" style="height:7px"><div class="pbf" style="width:82%;background:linear-gradient(90deg,var(--cy),var(--in))"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span>🌎 Real World</span><span style="color:var(--li)">41%</span></div><div class="pb" style="height:7px"><div class="pbf" style="width:41%;background:linear-gradient(90deg,var(--li),var(--cy))"></div></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">✦ AI Clinical Summary</div><span class="tag purple">Auto-generated</span></div>
+          <div style="padding:14px" id="reportArea">
+            <div style="background:rgba(91,47,232,.1);border:1px solid rgba(91,47,232,.15);border-radius:10px;padding:12px;font-size:11px;color:var(--mt);line-height:1.7">
+              This month's cohort shows <strong style="color:#fff">above-average engagement</strong> with Calm Zone (82%) — strong buy-in for anxiety regulation. Real-world transfer remains <strong style="color:var(--mg)">lowest at 41%</strong> — consider structured generalization prompts for Stage 1+ clients.<br><br>
+              <strong style="color:var(--li)">Jordan Kim</strong> is ready for Stage 2 advancement. <strong style="color:var(--mg)">Marcus Williams</strong> requires immediate re-engagement. Three clients hit 7+ day streaks — consider a group recognition event in Social Worlds.
+            </div>
+            <button class="ins-btn cta" style="margin-top:10px;width:100%;padding:9px;font-size:11px" onclick="genReport()">✦ Regenerate with AI</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-ttl">📋 Individual Client Summary</div></div>
+        <table class="ctable"><thead><tr><th>Client</th><th>Quests Done</th><th>Streak</th><th>Creatures</th><th>Calm Sessions</th><th>Real Life</th><th>Trend</th></tr></thead>
+        <tbody>
+          <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="c-av" style="background:rgba(255,107,0,.15)">🧑‍🚀</div><div><div class="c-nm">Marcus W.</div><div class="c-sub">22 · Speak Up focus</div></div></div></td><td style="font-weight:700">14</td><td style="color:var(--mg)">2d ↓</td><td>7</td><td style="color:var(--cy)">23</td><td style="color:var(--am)">5</td><td><span class="tag red">↓ Declining</span></td></tr>
+          <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="c-av" style="background:rgba(126,211,33,.1)">🦋</div><div><div class="c-nm">Jordan K.</div><div class="c-sub">19 · Stage 2</div></div></div></td><td style="font-weight:700">31</td><td style="color:var(--li)">14d ↑</td><td>12</td><td style="color:var(--cy)">38</td><td style="color:var(--li)">5</td><td><span class="tag green">↑ Thriving</span></td></tr>
+          <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="c-av" style="background:rgba(0,212,255,.1)">🧙</div><div><div class="c-nm">Riley M.</div><div class="c-sub">25 · Think It focus</div></div></div></td><td style="font-weight:700">22</td><td style="color:var(--am)">7d →</td><td>9</td><td style="color:var(--cy)">18</td><td style="color:var(--am)">3</td><td><span class="tag amber">→ Stable</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ══════ MESSAGES ══════ -->
+    <div class="view" id="view-messages">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Fredoka One',cursive;font-size:18px">Messages</div>
+        <span class="tag red">5 unread</span>
+        <button class="tb-btn primary" style="margin-left:auto" onclick="openModal('msgModal')">✉️ New Message</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px">
+        <div class="panel" style="max-height:580px;overflow-y:auto">
+          <div class="panel-hdr"><div class="panel-ttl">Inbox</div></div>
+          <div class="msg-item unread" onclick="loadMsg('marcus')">
+            <div class="msg-dot"></div>
+            <div class="msg-av" style="background:rgba(255,107,0,.15)">🧑‍🚀</div>
+            <div style="flex:1"><div class="msg-nm">Marcus W. <span style="font-size:9px;color:var(--mt)">via Sparky</span></div><div class="msg-prev">I feel really sad right now. I didn't do my quests...</div></div>
+            <div class="msg-time">2h ago</div>
+          </div>
+          <div class="msg-item unread" onclick="loadMsg('jordan')">
+            <div class="msg-dot"></div>
+            <div class="msg-av" style="background:rgba(126,211,33,.1)">🦋</div>
+            <div style="flex:1"><div class="msg-nm">Jordan K.</div><div class="msg-prev">I did it in real life!! Asked my boss for help today! 🎉</div></div>
+            <div class="msg-time">4h ago</div>
+          </div>
+          <div class="msg-item unread" onclick="loadMsg('ai')">
+            <div class="msg-dot"></div>
+            <div class="msg-av" style="background:rgba(91,47,232,.15)">✦</div>
+            <div style="flex:1"><div class="msg-nm">Pulse AI <span class="tag purple" style="font-size:7px">ALERT</span></div><div class="msg-prev">Marcus logged SAD mood 3x in a row</div></div>
+            <div class="msg-time">3h ago</div>
+          </div>
+          <div class="msg-item" onclick="loadMsg('riley')">
+            <div class="msg-av" style="background:rgba(0,212,255,.1);margin-left:14px">🧙</div>
+            <div style="flex:1"><div class="msg-nm">Riley M.</div><div class="msg-prev">Can we change my session time next week?</div></div>
+            <div class="msg-time">1d ago</div>
+          </div>
+        </div>
+        <div class="panel" id="msgDetail">
+          <div class="panel-hdr"><div class="panel-ttl">Marcus Williams — Sparky Chat Log</div><div style="display:flex;gap:6px"><span class="tag red">Mood: SAD</span><button class="p-act" onclick="openModal('msgModal')">Reply</button></div></div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto" id="msgThread">
+            <div style="font-size:9px;text-align:center;color:rgba(255,255,255,.2)">Today 10:22 AM — Sparky Chat Session</div>
+            <div class="aip-msg ai"><div class="aip-msg-hdr">🦊 SPARKY</div>Hey!! I'm SO happy you're here! What do you need today?</div>
+            <div class="aip-msg user">I feel really sad right now 😔</div>
+            <div class="aip-msg ai"><div class="aip-msg-hdr">🦊 SPARKY</div>I'm really sorry you're feeling sad. That's totally okay to feel. I'm right here with you 💛 Do you want to talk about what's making you sad, or do something calming together?</div>
+            <div class="aip-msg user">nothing feels good lately. i missed all my quests this week</div>
+            <div class="aip-msg ai"><div class="aip-msg-hdr">🦊 SPARKY</div>Missing quests doesn't make you a bad person — it just means this week was hard. And hard weeks happen to EVERYONE 💙 You reached out today — and that's brave! Want to try one tiny calm exercise together?</div>
+            <div style="background:rgba(255,45,120,.07);border:1px solid rgba(255,45,120,.2);border-radius:9px;padding:9px;font-size:10px;color:var(--mt)">
+              <strong style="color:var(--mg)">⚠️ AI Flag:</strong> Client expressed persistent sadness + low motivation. Mood alert sent to therapist. No crisis keywords detected. Recommend therapist follow-up within 24h.
+            </div>
+          </div>
+          <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.05)">
+            <div style="font-size:10px;color:var(--mt);font-weight:800;margin-bottom:7px">✦ AI Suggested Responses:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px">
+              <button class="aip-chip" onclick="draftReply('check-in')">Send warm check-in</button>
+              <button class="aip-chip" onclick="draftReply('quest')">Assign easier quest today</button>
+              <button class="aip-chip" onclick="draftReply('session')">Schedule a session</button>
+              <button class="aip-chip" onclick="draftReply('adjust')">Reduce quest difficulty</button>
+            </div>
+            <div style="display:flex;gap:6px">
+              <input class="f-inp" id="therapistReply" placeholder="Write a message to Marcus via Sparky..." style="font-size:11px" onkeydown="if(event.key==='Enter')sendReply()">
+              <button class="aip-send" onclick="sendReply()">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ ALERTS ══════ -->
+    <div class="view" id="view-alerts">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;margin-bottom:14px">Alerts &amp; Flags</div>
+      <div class="alert-c"><div class="al-ico">😔</div><div><div class="al-ttl">Marcus W. — 3x Consecutive SAD Mood</div><div class="al-txt">Auto-detected by Pulse AI. Last therapist note: 4 days ago. Quest completion: 20%. Recommend check-in today.</div></div><button class="al-act" onclick="openClient('marcus')">Open Profile →</button></div>
+      <div class="alert-c warn"><div class="al-ico">📉</div><div><div class="al-ttl">Jordan K. — Skipped 2 Assigned Quests</div><div class="al-txt">Normally 90%+ completion. Both Speak Up quests skipped this week. Possible regression or external stressor.</div></div><button class="al-act" style="background:rgba(255,184,0,.12);border-color:rgba(255,184,0,.2);color:var(--am)">Investigate →</button></div>
+      <div class="alert-c good"><div class="al-ico">🔥</div><div><div class="al-ttl">Riley M. — 7 Day Streak Milestone!</div><div class="al-txt">Riley hit their first 7-day streak! A great moment to send encouragement and review progress.</div></div><button class="al-act" onclick="openModal('msgModal')">Celebrate! →</button></div>
+      <div class="alert-c info"><div class="al-ico">🌎</div><div><div class="al-ttl">Jordan K. — 5th Real Life Transfer!</div><div class="al-txt">Jordan confirmed using a skill in real life for the 5th time this month — a new record. Stage 2 advancement recommended.</div></div><button class="al-act" style="background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.2);color:var(--cy)">Review Plan →</button></div>
+      <div class="panel" style="margin-top:4px">
+        <div class="panel-hdr"><div class="panel-ttl">🤖 Alert Rules — AI Monitoring</div><button class="p-act">Customize</button></div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:9px;font-size:11px">😔 Alert when client logs SAD mood 3+ days in a row<span class="tag green">Active</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:9px;font-size:11px">📉 Alert when quest completion drops below 30%<span class="tag green">Active</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:9px;font-size:11px">🔔 Alert when client hasn't opened app in 5+ days<span class="tag green">Active</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:9px;font-size:11px">🌎 Celebrate every real-life skill transfer<span class="tag green">Active</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:9px;font-size:11px">⚠️ Crisis keyword detection in Sparky chat<span class="tag green">Active</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:9px;font-size:11px">🔥 Notify on streak milestones (7, 14, 30 days)<span class="tag green">Active</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ LIVE MONITOR ══════ -->
+    <div class="view" id="view-live">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Fredoka One',cursive;font-size:18px">Live Monitor</div>
+        <span class="tag live">● 8 clients active now</span>
+      </div>
+      <div class="insight" style="margin-bottom:16px">
+        <div class="ins-hdr"><div class="ins-orb">✦</div><div><div class="ins-lbl">Real-Time Overview</div><div class="ins-nm">5 in Chat Worlds · 2 in Calm Zone · 1 completing quest</div></div></div>
+        <div class="ins-txt">No crisis flags active. Sparky has had 3 conversations in the last hour. Marcus started a breathing session 4 minutes ago — positive signal after mood dip.</div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">🌊 Ocean Deep World</div><span class="tag blue">3 clients</span></div>
+          <div style="padding:10px">
+            <div class="sess-card"><div class="sess-av">🦋</div><div><div class="sess-nm">Jordan K.</div><div class="sess-loc">Chatting + completing quests</div></div><div class="sess-right"><div class="sess-time">22 min</div><div class="sess-mood">😊</div></div></div>
+            <div class="sess-card"><div class="sess-av">🧙</div><div><div class="sess-nm">Riley M.</div><div class="sess-loc">In chat room</div></div><div class="sess-right"><div class="sess-time">8 min</div><div class="sess-mood">😐</div></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">☕ Cozy Cafe World</div><span class="tag amber">2 clients</span></div>
+          <div style="padding:10px">
+            <div class="sess-card"><div class="sess-av">🦸</div><div><div class="sess-nm">Alex T.</div><div class="sess-loc">Just completed a quest! 🎉</div></div><div class="sess-right"><div class="sess-time">35 min</div><div class="sess-mood">😄</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">☁️ Calm Zone — Active Sessions</div><span class="tag purple">2 active</span></div>
+          <div style="padding:10px">
+            <div class="sess-card" style="border-color:rgba(91,47,232,.2)"><div class="sess-av">🧑‍🚀</div><div><div class="sess-nm">Marcus W.</div><div class="sess-loc">Box Breathing — Round 3 ✦ Good sign!</div></div><div class="sess-right"><div class="sess-time">4 min</div><div class="sess-mood">😌</div></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-ttl">🦊 Sparky Chat — Active</div><span class="tag green">3 this hour</span></div>
+          <div style="padding:10px">
+            <div class="sess-card"><div class="sess-av" style="font-size:17px">🤖</div><div><div class="sess-nm">Sam L. + Sparky</div><div class="sess-loc">Talking about feeling nervous at school</div></div><div class="sess-right"><div class="sess-time">Live</div><div class="sess-mood">😰</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══ AI ASSISTANT PANEL ══ -->
+<div class="ai-panel">
+  <div class="aip-hdr">
+    <div class="aip-orb">✦</div>
+    <div><div class="aip-ttl">Pulse AI</div><div class="aip-sub">Your clinical co-pilot</div></div>
+  </div>
+  <div class="aip-msgs" id="aiMsgs">
+    <div class="aip-msg ai"><div class="aip-msg-hdr">✦ PULSE AI</div>Good morning, Dr. Ramírez! You have 3 alerts and 5 unread messages. Marcus Williams flagged with mood drop — I'd recommend outreach today. Jordan Kim hit a real-life milestone! 🎉 What do you want to focus on?</div>
+  </div>
+  <div class="aip-chips" id="aiChips">
+    <div class="aip-chip" onclick="aiQuery(this)">Who needs attention today?</div>
+    <div class="aip-chip" onclick="aiQuery(this)">Summarize Marcus's week</div>
+    <div class="aip-chip" onclick="aiQuery(this)">Suggest quests for Jordan</div>
+    <div class="aip-chip" onclick="aiQuery(this)">Draft a check-in message</div>
+    <div class="aip-chip" onclick="aiQuery(this)">Group progress this week</div>
+  </div>
+  <div class="aip-bar">
+    <input class="aip-inp" id="aiInp" placeholder="Ask Pulse AI anything..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="aip-send" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="overlay" id="addClientModal" onclick="if(event.target===this)closeModal(this)">
+  <div class="modal">
+    <div class="modal-ttl">Add New Client</div>
+    <div class="modal-sub">Create a client profile in the Pulse ecosystem. They'll receive an app invite and their quests will sync instantly.</div>
+    <div class="f-2col">
+      <div class="f-row"><label class="f-lbl">First Name</label><input class="f-inp" placeholder="e.g. Marcus"></div>
+      <div class="f-row"><label class="f-lbl">Last Name</label><input class="f-inp" placeholder="e.g. Williams"></div>
+    </div>
+    <div class="f-2col">
+      <div class="f-row"><label class="f-lbl">Age</label><input class="f-inp" type="number" placeholder="22"></div>
+      <div class="f-row"><label class="f-lbl">Pronouns</label><select class="f-sel"><option>He/Him</option><option>She/Her</option><option>They/Them</option></select></div>
+    </div>
+    <div class="f-row"><label class="f-lbl">Clinical Notes / Diagnosis</label><textarea class="f-ta" placeholder="e.g. Mild intellectual disability, comorbid anxiety..."></textarea></div>
+    <div class="f-row"><label class="f-lbl">Primary Treatment Goal</label>
+      <select class="f-sel"><option>Self-Advocacy (Speak Up)</option><option>Cognitive Reframing (Think It)</option><option>Anxiety Regulation (Calm Zone)</option><option>Social Integration</option><option>Vocational Readiness</option></select>
+    </div>
+    <div class="f-row"><label class="f-lbl">Initial Quest Assignment</label>
+      <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:5px">
+        <label class="f-check"><input type="checkbox" checked> Ask for Help at Work</label>
+        <label class="f-check"><input type="checkbox" checked> Box Breathing (5 rounds)</label>
+        <label class="f-check"><input type="checkbox"> Flip a Sneaky Thought</label>
+        <label class="f-check"><input type="checkbox"> Worry Float</label>
+      </div>
+    </div>
+    <div class="f-row"><label class="f-lbl">App Invite (email or phone)</label><input class="f-inp" placeholder="client@email.com or +1 (555) 000-0000"></div>
+    <div class="modal-foot">
+      <button class="modal-btn cancel" onclick="closeModal(document.getElementById('addClientModal'))">Cancel</button>
+      <button class="modal-btn save" onclick="toast('Client profile created! App invite sent. ✓');closeModal(document.getElementById('addClientModal'))">Create Profile ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="noteModal" onclick="if(event.target===this)closeModal(this)">
+  <div class="modal">
+    <div class="modal-ttl">Add Clinical Note</div>
+    <div class="modal-sub">Notes are stored securely in the client's timeline and can be reviewed alongside AI-generated insights.</div>
+    <div class="f-row"><label class="f-lbl">Client</label><select class="f-sel"><option>Marcus Williams</option><option>Jordan Kim</option><option>Riley Morris</option></select></div>
+    <div class="f-row"><label class="f-lbl">Note Type</label><select class="f-sel"><option>Session Note</option><option>Progress Update</option><option>Plan Adjustment</option><option>Alert / Concern</option><option>Milestone / Win 🎉</option></select></div>
+    <div class="f-row"><label class="f-lbl">Note</label><textarea class="f-ta" style="min-height:110px" placeholder="e.g. Marcus showed strong engagement with Speak Up scenarios but continues to avoid real-world transfer tasks..."></textarea></div>
+    <div class="f-row"><label class="f-check"><input type="checkbox" checked> Share with Pulse AI for future insights</label></div>
+    <div class="modal-foot">
+      <button class="modal-btn cancel" onclick="closeModal(document.getElementById('noteModal'))">Cancel</button>
+      <button class="modal-btn save" onclick="toast('Note saved to client timeline ✓');closeModal(document.getElementById('noteModal'))">Save Note ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="assignModal" onclick="if(event.target===this)closeModal(this)">
+  <div class="modal">
+    <div class="modal-ttl">Assign Quest</div>
+    <div class="modal-sub">Assigned quests appear in the client's Pulse app immediately and show as priority items.</div>
+    <div class="f-row"><label class="f-lbl">Select Client(s)</label>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:5px">
+        <label class="f-check"><input type="checkbox" checked> Marcus Williams</label>
+        <label class="f-check"><input type="checkbox"> Jordan Kim</label>
+        <label class="f-check"><input type="checkbox"> Riley Morris</label>
+        <label class="f-check"><input type="checkbox"> Alex Torres</label>
+      </div>
+    </div>
+    <div class="f-2col">
+      <div class="f-row"><label class="f-lbl">Due Date</label><input class="f-inp" type="date"></div>
+      <div class="f-row"><label class="f-lbl">Priority</label><select class="f-sel"><option>Normal</option><option>High — show as bonus quest</option><option>Low — optional</option></select></div>
+    </div>
+    <div class="f-row"><label class="f-lbl">Message to Client (optional)</label><textarea class="f-ta" placeholder="Hey! I added this quest because I think it's perfect for where you're at right now 💪"></textarea></div>
+    <div class="modal-foot">
+      <button class="modal-btn cancel" onclick="closeModal(document.getElementById('assignModal'))">Cancel</button>
+      <button class="modal-btn save" onclick="toast('Quest assigned! Appearing in client app now ✓');closeModal(document.getElementById('assignModal'))">Assign Quest ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="addQuestModal" onclick="if(event.target===this)closeModal(this)">
+  <div class="modal">
+    <div class="modal-ttl">Create Custom Quest</div>
+    <div class="modal-sub">Design a tailored skill scenario. Write at 6th grade reading level — Pulse AI can help.</div>
+    <div class="f-row"><label class="f-lbl">Quest Name</label><input class="f-inp" placeholder="e.g. Ask for Help at the Grocery Store"></div>
+    <div class="f-2col">
+      <div class="f-row"><label class="f-lbl">Skill Area</label><select class="f-sel"><option>🗣️ Speak Up</option><option>💭 Think It</option><option>☁️ Calm Zone</option><option>🌎 Real World</option></select></div>
+      <div class="f-row"><label class="f-lbl">Star Reward</label><input class="f-inp" type="number" placeholder="50" min="10" max="200"></div>
+    </div>
+    <div class="f-row"><label class="f-lbl">Scenario (simple language — 6th grade max)</label><textarea class="f-ta" placeholder="You are at the grocery store and you can't find the bread. There's a store worker nearby..."></textarea></div>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button class="tb-btn" style="flex:1;justify-content:center" onclick="aiWriteChoices()">✦ AI Write Answer Choices</button>
+    </div>
+    <div class="f-row"><label class="f-lbl">✅ Correct Answer</label><input class="f-inp" placeholder="Ask the worker politely for help"></div>
+    <div class="f-row"><label class="f-lbl">❌ Wrong Answer 1 (avoidance)</label><input class="f-inp" placeholder="Leave the store without getting bread"></div>
+    <div class="f-row"><label class="f-lbl">❌ Wrong Answer 2 (escalation)</label><input class="f-inp" placeholder="Get upset and give up"></div>
+    <div class="modal-foot">
+      <button class="modal-btn cancel" onclick="closeModal(document.getElementById('addQuestModal'))">Cancel</button>
+      <button class="modal-btn save" onclick="toast('Custom quest added to library! ✓');closeModal(document.getElementById('addQuestModal'))">Create Quest ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="addPlanModal" onclick="if(event.target===this)closeModal(this)">
+  <div class="modal">
+    <div class="modal-ttl">Treatment Plan</div>
+    <div class="modal-sub">Define client goals, app structure, and stage. Plans sync to the client's Pulse world in real time.</div>
+    <div class="f-row"><label class="f-lbl">Client</label><select class="f-sel"><option>Marcus Williams</option><option>Jordan Kim</option><option>Riley Morris</option></select></div>
+    <div class="f-2col">
+      <div class="f-row"><label class="f-lbl">Treatment Stage</label><select class="f-sel"><option>Stage 1 — Skill Building</option><option>Stage 2 — Transfer &amp; Generalization</option><option>Stage 3 — Independence</option></select></div>
+      <div class="f-row"><label class="f-lbl">Plan Review Date</label><input class="f-inp" type="date"></div>
+    </div>
+    <div class="f-row"><label class="f-lbl">Clinical Summary</label><textarea class="f-ta" placeholder="Presentation, primary challenges, treatment rationale..."></textarea></div>
+    <div class="f-row"><label class="f-lbl">Primary Goal</label><input class="f-inp" placeholder="e.g. Self-advocacy in work and community settings"></div>
+    <div class="f-row"><label class="f-lbl">Weekly App Structure</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:5px">
+        <label class="f-check"><input type="checkbox" checked> Daily mood check-in</label>
+        <label class="f-check"><input type="checkbox" checked> 3x Speak Up quests/week</label>
+        <label class="f-check"><input type="checkbox" checked> Daily breathing practice</label>
+        <label class="f-check"><input type="checkbox"> Social World 3x/week</label>
+        <label class="f-check"><input type="checkbox"> Vision World 1x/week</label>
+        <label class="f-check"><input type="checkbox"> Group Quest participation</label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn cancel" onclick="closeModal(document.getElementById('addPlanModal'))">Cancel</button>
+      <button class="modal-btn save" onclick="toast('Treatment plan saved and synced to client app ✓');closeModal(document.getElementById('addPlanModal'))">Save Plan ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="msgModal" onclick="if(event.target===this)closeModal(this)">
+  <div class="modal">
+    <div class="modal-ttl">Send Message</div>
+    <div class="modal-sub">Messages are delivered through Sparky in the client's app — warm, in-world, and non-clinical feeling.</div>
+    <div class="f-row"><label class="f-lbl">To</label><select class="f-sel"><option>Marcus Williams</option><option>Jordan Kim</option><option>Riley Morris</option><option>All Clients</option></select></div>
+    <div class="f-row"><label class="f-lbl">Message</label><textarea class="f-ta" id="msgTxt" style="min-height:90px" placeholder="Write a message..."></textarea></div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;color:var(--mt);font-weight:900;margin-bottom:7px;letter-spacing:.5px">✦ AI DRAFTS:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        <button class="aip-chip" onclick="draftMsg('check-in')">Check-in message</button>
+        <button class="aip-chip" onclick="draftMsg('encourage')">Encouragement</button>
+        <button class="aip-chip" onclick="draftMsg('celebrate')">Celebrate milestone</button>
+        <button class="aip-chip" onclick="draftMsg('quest')">Quest reminder</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn cancel" onclick="closeModal(document.getElementById('msgModal'))">Cancel</button>
+      <button class="modal-btn save" onclick="toast('Message sent via Sparky! Client will see it in-app ✓');closeModal(document.getElementById('msgModal'))">Send Message ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── CLIENT DATA (mirrors user app ecosystem) ─── */
+const CLIENTS = [
+  {id:"marcus",av:"🧑‍🚀",bg:"rgba(255,107,0,.15)",name:"Marcus Williams",age:22,goal:"Self-Advocacy",status:"at-risk",streak:2,prog:35,mood:"😔",last:"2h ago",quests:14,critters:7,calm:23,real:5,stage:1},
+  {id:"jordan",av:"🦋",bg:"rgba(126,211,33,.1)",name:"Jordan Kim",age:19,goal:"Social Integration",status:"active",streak:14,prog:91,mood:"😄",last:"30m ago",quests:31,critters:12,calm:38,real:5,stage:2},
+  {id:"riley",av:"🧙",bg:"rgba(0,212,255,.1)",name:"Riley Morris",age:25,goal:"Thought Flipping",status:"active",streak:7,prog:72,mood:"😐",last:"1h ago",quests:22,critters:9,calm:18,real:3,stage:1},
+  {id:"alex",av:"🦸",bg:"rgba(168,85,247,.12)",name:"Alex Torres",age:28,goal:"Vocational Readiness",status:"active",streak:5,prog:60,mood:"🙂",last:"4h ago",quests:18,critters:5,calm:14,real:2,stage:1},
+  {id:"sam",av:"🤖",bg:"rgba(255,184,0,.1)",name:"Sam Lee",age:21,goal:"Anxiety Regulation",status:"active",streak:11,prog:84,mood:"😊",last:"20m ago",quests:26,critters:10,calm:41,real:4,stage:2},
+];
+
+/* ─── RENDER TABLES ─── */
+function statusTag(s){return s==="active"?"<span class='tag green'>Active</span>":"<span class='tag red'>Needs Attention</span>";}
+function renderTable(id,cols){
+  const tb=document.getElementById(id);if(!tb)return;
+  tb.innerHTML=CLIENTS.map(c=>{
+    const pc=c.prog>70?"var(--li)":c.prog>40?"var(--am)":"var(--mg)";
+    const sc=c.streak>=7?"var(--li)":c.streak<3?"var(--mg)":"var(--am)";
+    const av=`<div style="display:flex;align-items:center;gap:8px"><div class="c-av" style="background:${c.bg}">${c.av}</div><div><div class="c-nm">${c.name}</div><div class="c-sub">Age ${c.age} · Stage ${c.stage}</div></div></div>`;
+    if(cols==="dash") return`<tr class="crow" onclick="openClient('${c.id}')""><td>${av}</td><td>${statusTag(c.status)}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="pb" style="width:90px"><div class="pbf" style="width:${c.prog}%;background:linear-gradient(90deg,var(--in),var(--pu))"></div></div><span style="font-size:10px;color:${pc};font-weight:800">${c.prog}%</span></div></td><td style="color:${sc};font-weight:800">${c.streak}d 🔥</td><td style="font-size:17px">${c.mood}</td><td style="font-size:10px;color:var(--mt)">${c.last}</td></tr>`;
+    return`<tr class="crow" onclick="openClient('${c.id}')""><td>${av}</td><td style="font-size:11px">${c.age}</td><td style="font-size:11px">${c.goal}</td><td>${statusTag(c.status)}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="pb" style="width:80px"><div class="pbf" style="width:${c.prog}%;background:linear-gradient(90deg,var(--in),var(--pu))"></div></div><span style="font-size:10px;color:${pc};font-weight:800">${c.prog}%</span></div></td><td style="color:${sc};font-weight:800;font-size:11px">${c.streak}d</td><td style="font-size:10px;color:var(--mt)">${c.last}</td><td><button class="p-act" onclick="event.stopPropagation();openModal('assignModal')">+ Quest</button></td></tr>`;
+  }).join("");
+}
+renderTable("dashRows","dash");
+renderTable("allRows","all");
+
+/* ─── CHART ─── */
+const wData=[8,12,7,16,11,14,9];
+const wChart=document.getElementById("weekChart");
+wData.forEach(v=>{const b=document.createElement("div");b.className="chart-bar";b.style.height=(v/Math.max(...wData)*50)+"px";b.style.background="linear-gradient(180deg,var(--pu),var(--in))";b.style.opacity=".8";wChart.appendChild(b);});
+
+/* ─── NAV ─── */
+function nav(id,el){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+id).classList.add("active");
+  document.querySelectorAll(".sb-item").forEach(i=>i.classList.remove("active"));
+  if(el)el.classList.add("active");
+  const titles={dashboard:"Dashboard",clients:"Clients",quests:"Quest Library",plans:"Treatment Plans",reports:"Reports & Analytics",messages:"Messages",alerts:"Alerts & Flags",live:"Live Monitor"};
+  document.getElementById("topTitle").textContent=titles[id]||id;
+  if(id==="clients"){document.getElementById("clientList").style.display="block";document.getElementById("clientDetail").style.display="none";}
+}
+
+/* ─── OPEN CLIENT ─── */
+function openClient(id){
+  const c=CLIENTS.find(x=>x.id===id)||CLIENTS[0];
+  nav("clients",document.querySelector("[onclick*='clients']"));
+  document.getElementById("clientList").style.display="none";
+  const d=document.getElementById("clientDetail");d.style.display="block";
+  const pc=c.prog>70?"var(--li)":c.prog>40?"var(--am)":"var(--mg)";
+  const sc=c.streak>=7?"var(--li)":c.streak<3?"var(--mg)":"var(--am)";
+  d.innerHTML=`
+    <button class="back-btn" onclick="backClients()">← All Clients</button>
+    <div class="cd-hero">
+      <div class="cd-av">${c.av}</div>
+      <div style="flex:1">
+        <div class="cd-nm">${c.name}</div>
+        <div class="cd-meta">Age ${c.age} &middot; Stage ${c.stage} Treatment &middot; Last active ${c.last}</div>
+        <div class="cd-tags">
+          ${statusTag(c.status)}
+          <span class="tag purple">${c.goal}</span>
+          <span class="tag ${c.streak>=7?"green":c.streak<3?"red":"amber"}">${c.streak} day streak 🔥</span>
+        </div>
+      </div>
+      <div class="cd-acts">
+        <button class="tb-btn primary" onclick="openModal('msgModal')">✉️ Message</button>
+        <button class="tb-btn" onclick="openModal('assignModal')">+ Assign Quest</button>
+        <button class="tb-btn" onclick="openModal('noteModal')">📝 Add Note</button>
+      </div>
+    </div>
+    <div class="cd-stats-row">
+      <div class="cd-stat"><div class="cds-val" style="color:var(--am)">${c.quests}</div><div class="cds-lbl">⚔️ Quests Done</div></div>
+      <div class="cd-stat"><div class="cds-val" style="color:var(--cy)">${c.critters}</div><div class="cds-lbl">🐾 Creatures</div></div>
+      <div class="cd-stat"><div class="cds-val" style="color:var(--pu)">${c.calm}</div><div class="cds-lbl">☁️ Calm Sessions</div></div>
+      <div class="cd-stat"><div class="cds-val" style="color:var(--li)">${c.real}</div><div class="cds-lbl">🌎 Real Life Wins</div></div>
+      <div class="cd-stat"><div class="cds-val" style="color:${sc}">${c.streak}</div><div class="cds-lbl">🔥 Day Streak</div></div>
+    </div>
+    <div class="cd-2col">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-ttl">📋 Treatment Goals</div><button class="p-act" onclick="openModal('addPlanModal')">Edit Plan</button></div>
+        <div style="padding:13px">
+          <div class="goal-row"><div class="goal-ico">🗣️</div><div style="flex:1"><div class="goal-ttl">Self-Advocacy</div><div class="goal-desc">Asking for help in work, medical, and community contexts</div><div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:${c.prog}%;background:linear-gradient(90deg,var(--mg),var(--or))"></div></div><span class="goal-pct" style="color:${pc}">${c.prog}%</span></div></div></div>
+          <div class="goal-row"><div class="goal-ico">🧘</div><div style="flex:1"><div class="goal-ttl">Calm Zone Practice</div><div class="goal-desc">Daily breathing; PMR 3x/week target</div><div class="goal-prog"><div class="pb" style="flex:1"><div class="pbf" style="width:81%;background:linear-gradient(90deg,var(--cy),var(--in))"></div></div><span class="goal-pct" style="color:var(--cy)">81%</span></div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-ttl">✦ AI Insight</div><span class="tag purple">Live</span></div>
+        <div style="padding:12px">
+          <div class="insight" id="clientInsight">
+            <div class="ins-hdr"><div class="ins-orb">✦</div><div><div class="ins-lbl">Analyzing...</div><div class="ins-nm" style="font-size:12px">${c.name}</div></div></div>
+            <div class="ins-txt"><div class="ai-dots"><span></span><span></span><span></span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cd-2col">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-ttl">⚔️ Assigned Quests</div><button class="p-act" onclick="openModal('assignModal')">+ Assign</button></div>
+        <div style="padding:10px">
+          <div class="qac assigned"><div class="qac-emj">🏢</div><div><div class="qac-nm">Ask for Help at Work</div><div class="qac-desc">Due: Today</div></div><span class="tag amber">In Progress</span></div>
+          <div class="qac assigned"><div class="qac-emj">🌬️</div><div><div class="qac-nm">Box Breathing</div><div class="qac-desc">Completed 4x this week</div></div><span class="tag green">Done ✓</span></div>
+          <div class="qac"><div class="qac-emj">💭</div><div><div class="qac-nm">Flip a Sneaky Thought</div><div class="qac-desc">Due: Tomorrow</div></div><span class="tag red">Missed</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-ttl">📜 Session Timeline</div></div>
+        <div class="tl">
+          <div class="tl-item"><div class="tl-dot" style="background:var(--mg)"></div><div class="tl-date">Today</div><div class="tl-txt"><div class="tl-type" style="color:var(--mg)">MOOD ALERT</div>Logged "SAD" mood check-in. Sparky provided support. AI alert sent to therapist.</div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:var(--cy)"></div><div class="tl-date">3 days ago</div><div class="tl-txt"><div class="tl-type" style="color:var(--cy)">CALM SESSION</div>Completed 3 rounds box breathing in Ocean Deep World. Duration: 8 mins.</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">5 days ago</div><div class="tl-txt"><div class="tl-type" style="color:var(--li)">QUEST COMPLETE</div>Completed "Ask for Help at Work" — scored 3/3. AI feedback delivered. +50 Stars.</div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:var(--am)"></div><div class="tl-date">1 week ago</div><div class="tl-txt"><div class="tl-type" style="color:var(--am)">SESSION NOTE</div>Dr. Ramírez: Good engagement. Avoidance on real-world transfer. Continue Stage 1.</div></div>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(()=>loadClientInsight(c),600);
+}
+
+async function loadClientInsight(c){
+  const el=document.getElementById("clientInsight");if(!el)return;
+  const pr=`You are Pulse AI, a clinical co-pilot for a therapist. Write a brief (2-3 sentences, professional tone) clinical insight about: ${c.name}, age ${c.age}, goal: ${c.goal}, streak: ${c.streak} days, quest completion: ${c.prog}%, mood: ${c.mood}, stage: ${c.stage}. Be specific and actionable.`;
+  let reply=`${c.name} shows ${c.prog>70?"strong":c.prog>40?"moderate":"low"} engagement. ${c.mood==="😔"?"Current mood flag warrants outreach today.":"Mood indicators are positive."} ${c.streak<3?"Consider a motivational message or session review.":"Maintain current plan trajectory."}`;
+  try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:pr}]})});const d=await r.json();if(d.content?.[0]?.text)reply=d.content[0].text;}catch{}
+  if(!document.getElementById("clientInsight"))return;
+  document.getElementById("clientInsight").innerHTML=`<div class="ins-hdr"><div class="ins-orb">✦</div><div><div class="ins-lbl">AI Clinical Insight</div><div class="ins-nm" style="font-size:12px">${c.name} — Today</div></div></div><div class="ins-txt">${reply}</div><div class="ins-btns"><button class="ins-btn cta" onclick="openModal('msgModal')">Message</button><button class="ins-btn" onclick="openModal('noteModal')">Add Note</button></div>`;
+}
+
+function backClients(){document.getElementById("clientList").style.display="block";document.getElementById("clientDetail").style.display="none";}
+
+/* ─── AI PANEL ─── */
+const AI_SYS="You are Pulse AI, a clinical assistant for a therapist using the Pulse platform — a gamified therapy app for people with mild intellectual disability. Help with client insights, message drafting, quest suggestions, and progress summaries. Respond professionally but concisely (2-4 sentences unless asked for more). Client context: Marcus Williams (22, at-risk, streak:2, mood:SAD x3, completion:35%), Jordan Kim (19, Stage 2, streak:14, thriving, 5 real-life transfers), Riley Morris (25, stable, streak:7).";
+async function sendAI(){
+  const inp=document.getElementById("aiInp");const msg=inp.value.trim();if(!msg)return;
+  inp.value="";addAIMsg(msg,"user");addAIMsg("...","ai",true);
+  let reply="Based on your client data, I recommend prioritizing Marcus today with a warm check-in message.";
+  try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:AI_SYS,messages:[{role:"user",content:msg}]})});const d=await r.json();if(d.content?.[0]?.text)reply=d.content[0].text;}catch{}
+  replaceLastAI(reply);
+}
+function aiQuery(chip){document.getElementById("aiInp").value=chip.textContent;sendAI();}
+function addAIMsg(text,role,dots=false){
+  const c=document.getElementById("aiMsgs");const d=document.createElement("div");d.className="aip-msg "+role;
+  if(role==="ai")d.innerHTML=`<div class="aip-msg-hdr">✦ PULSE AI</div>${dots?"<div class='ai-dots'><span></span><span></span><span></span></div>":text}`;
+  else d.textContent=text;c.appendChild(d);c.scrollTo({top:c.scrollHeight,behavior:"smooth"});
+}
+function replaceLastAI(text){const msgs=document.getElementById("aiMsgs");const last=msgs.querySelector(".aip-msg.ai:last-child");if(!last)return;last.innerHTML=`<div class="aip-msg-hdr">✦ PULSE AI</div>${text}`;}
+
+/* ─── MODALS ─── */
+function openModal(id){document.getElementById(id).classList.add("show");}
+function closeModal(el){el.classList.remove("show");}
+
+/* ─── REPORT ─── */
+async function genReport(){
+  const el=document.getElementById("reportArea");el.innerHTML="<div class='ai-dots' style='padding:14px'><span></span><span></span><span></span></div>";
+  let r2="Strong overall engagement. Calm Zone leads at 82%. Real-world transfer at 41% — recommend generalization prompts.";
+  try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:"Write a 4-sentence monthly clinical summary for a therapist with 5 clients with mild intellectual disability. Engagement data: Calm 82%, Speak Up 78%, Think It 65%, Real World 41%. Marcus needs re-engagement. Jordan ready for Stage 2. Three clients hit 7-day streaks. Professional but accessible tone."}]})});const d=await r.json();if(d.content?.[0]?.text)r2=d.content[0].text;}catch{}
+  el.innerHTML=`<div style="background:rgba(91,47,232,.1);border:1px solid rgba(91,47,232,.15);border-radius:10px;padding:12px;font-size:11px;color:var(--mt);line-height:1.7">${r2}</div><button class="ins-btn cta" style="margin-top:10px;width:100%;padding:9px;font-size:11px" onclick="genReport()">✦ Regenerate</button>`;
+}
+
+/* ─── MESSAGES ─── */
+async function draftReply(type){
+  const prompts={"check-in":"Write a 2-sentence warm check-in message from therapist to Marcus who seems sad and missed quests. Supportive, not clinical.","quest":"Write a 1-2 sentence upbeat quest reminder to a client. Make it feel exciting, not pressuring.","session":"Write a 1-sentence message scheduling a check-in session with a client who seems to be struggling.","adjust":"Write a 1-sentence message telling a client their quests have been adjusted to be a bit easier this week — frame positively."};
+  const ta=document.getElementById("therapistReply");ta.value="Drafting...";
+  let reply="Hey! Just wanted to check in. Remember I'm here whenever you need me 💙";
+  try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompts[type]}]})});const d=await r.json();if(d.content?.[0]?.text)reply=d.content[0].text;}catch{}
+  ta.value=reply;
+}
+async function draftMsg(type){
+  const prompts={"check-in":"2 sentences, therapist to struggling client Marcus. Warm and brief.","encourage":"2 sentences encouragement to client making progress. Uplifting.","celebrate":"2 sentences celebrating Jordan's 5th real-life skill transfer! Enthusiastic.","quest":"1 sentence quest reminder. Exciting not pressuring."};
+  const ta=document.getElementById("msgTxt");ta.value="Drafting...";
+  let reply="";try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompts[type]}]})});const d=await r.json();if(d.content?.[0]?.text)reply=d.content[0].text;}catch{reply="Hey! Just checking in on you. Your hard work is showing 💪";}
+  ta.value=reply;
+}
+function sendReply(){const inp=document.getElementById("therapistReply");if(!inp.value.trim())return;toast("Message sent to Marcus via Sparky ✓");inp.value="";}
+function loadMsg(id){console.log("load msg",id);}
+async function aiWriteChoices(){toast("AI is generating answer choices... ✦");}
+
+/* ─── TOAST ─── */
+function toast(msg){
+  const t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),3500);
+}
+</script>
+</body>
+</html>

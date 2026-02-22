@@ -150,9 +150,9 @@ export default function ARWorldScreen({
 
       <div className="ar-top-bar">
         <button type="button" className="ar-close" onClick={onBack}>
-          ✕ Exit AR
+          ✕ Exit
         </button>
-        <div className="ar-title-badge">🔮 AR WORLD</div>
+        <div className="ar-title-badge">🌿 WILD ZONE</div>
         <div className="ar-compass">🧭</div>
       </div>
 
