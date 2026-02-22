@@ -71,6 +71,7 @@ export default function HomeScreen({
           </div>
         </div>
       </div>
+      <div className="h-16"></div>
 
       <div className="world-map">
         <div

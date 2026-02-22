@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pulse — My Adventure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --magenta:   #FF2D78;
+  --orange:    #FF6B00;
+  --amber:     #FFB800;
+  --lime:      #7ED321;
+  --cyan:      #00D4FF;
+  --indigo:    #5B2FE8;
+  --purple:    #A855F7;
+  --navy:      #0F0A2E;
+  --dark:      #1A1040;
+  --card:      #221654;
+  --card2:     #2A1E6E;
+  --border:    rgba(255,255,255,0.08);
+  --text:      #FFFFFF;
+  --muted:     rgba(255,255,255,0.5);
+  --shadow:    0 8px 32px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Nunito',sans-serif;
+  background:#0A0620;
+  color:var(--text);
+  min-height:100vh;
+  display:flex;justify-content:center;align-items:flex-start;
+  padding:16px;
+}
+
+/* ── PHONE SHELL ── */
+.phone{
+  width:390px;
+  background:var(--navy);
+  border-radius:50px;
+  box-shadow:0 40px 100px rgba(0,0,0,0.6),
+             0 0 0 8px #111,
+             0 0 0 10px #333,
+             0 0 60px rgba(91,47,232,0.3);
+  overflow:hidden;
+  position:relative;
+  display:flex;flex-direction:column;
+  min-height:820px;
+}
+
+/* NOTCH */
+.notch{
+  width:120px;height:30px;
+  background:#111;
+  border-radius:0 0 20px 20px;
+  margin:0 auto;
+  position:relative;z-index:20;
+}
+
+/* STATUS */
+.status{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:4px 24px 0;
+  font-size:12px;font-weight:800;
+  position:relative;z-index:10;
+}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;animation:fadeUp .3s ease}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════
+   HOME / WORLD MAP
+═══════════════════════════════════════ */
+#home{
+  background: radial-gradient(ellipse at 50% 0%, #3B1FA8 0%, #0F0A2E 60%);
+  position:relative;overflow:hidden;
+}
+
+/* Animated star field */
+.stars{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.star{
+  position:absolute;border-radius:50%;background:white;
+  animation:twinkle linear infinite;
+}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+
+/* Aurora */
+.aurora{
+  position:absolute;top:-60px;left:-60px;right:-60px;
+  height:300px;
+  background:linear-gradient(135deg,
+    rgba(91,47,232,0.4) 0%,
+    rgba(0,212,255,0.3) 30%,
+    rgba(168,85,247,0.35) 60%,
+    rgba(255,45,120,0.25) 100%);
+  filter:blur(40px);
+  animation:auroraMove 8s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes auroraMove{from{transform:translateX(-20px) skewX(-3deg)}to{transform:translateX(20px) skewX(3deg)}}
+
+.home-header{
+  position:relative;z-index:5;
+  padding:10px 20px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.player-info{display:flex;align-items:center;gap:10px}
+.avatar-ring{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--magenta),var(--purple));
+  padding:3px;flex-shrink:0;
+}
+.avatar-inner{
+  width:100%;height:100%;border-radius:50%;
+  background:linear-gradient(135deg,#FF8C42,#FFD166);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.player-name{font-family:'Fredoka One',cursive;font-size:18px;line-height:1}
+.player-level{
+  font-size:11px;font-weight:800;
+  background:linear-gradient(90deg,var(--amber),var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.header-pills{display:flex;gap:8px;align-items:center}
+.pill-stat{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;padding:6px 12px;
+  display:flex;align-items:center;gap:5px;
+  font-size:13px;font-weight:800;
+}
+.pill-fire{color:var(--orange)}
+.pill-star{color:var(--amber)}
+
+/* WORLD MAP CANVAS */
+.world-map{
+  position:relative;z-index:3;
+  height:280px;
+  margin:10px 16px 0;
+  border-radius:24px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.1);
+  background:
+    radial-gradient(ellipse at 30% 60%,rgba(91,47,232,0.5),transparent 50%),
+    radial-gradient(ellipse at 75% 30%,rgba(0,212,255,0.3),transparent 50%),
+    radial-gradient(ellipse at 60% 80%,rgba(168,85,247,0.3),transparent 40%),
+    linear-gradient(180deg,#0D0B30,#1A1060);
+}
+
+/* Floating islands */
+.island{
+  position:absolute;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;
+  animation:islandFloat ease-in-out infinite;
+  transition:transform .15s;
+}
+.island:active{transform:scale(.9)!important}
+@keyframes islandFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+.island-base{
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:2px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.15);
+  position:relative;
+}
+.island-shadow{
+  width:70%;height:8px;
+  background:rgba(0,0,0,.4);
+  border-radius:50%;
+  filter:blur(4px);
+  margin-top:2px;
+}
+.island-glow{
+  position:absolute;inset:-6px;
+  border-radius:50%;
+  opacity:.5;
+  animation:glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
+.island-emoji{font-size:26px;z-index:1}
+.island-name{
+  font-size:9px;font-weight:900;
+  background:rgba(255,255,255,.9);
+  color:#1A1040;padding:2px 7px;border-radius:8px;
+  white-space:nowrap;letter-spacing:.5px;z-index:1;
+}
+.island-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:var(--magenta);color:white;
+  border-radius:50%;width:20px;height:20px;
+  font-size:10px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--navy);
+  animation:badgePop .5s ease infinite alternate;
+}
+@keyframes badgePop{from{transform:scale(1)}to{transform:scale(1.2)}}
+.island-locked .island-base{filter:grayscale(.8);opacity:.5}
+.island-locked .island-name{background:rgba(255,255,255,.4);color:#888}
+
+/* AR MODE BUTTON */
+.ar-fab{
+  position:absolute;bottom:12px;right:12px;z-index:10;
+  background:linear-gradient(135deg,var(--cyan),var(--indigo));
+  border-radius:16px;padding:10px 16px;
+  display:flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:900;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,212,255,.4);
+  border:none;color:white;font-family:'Nunito',sans-serif;
+  animation:fabPulse 2s ease infinite;
+}
+@keyframes fabPulse{0%,100%{box-shadow:0 4px 20px rgba(0,212,255,.4)}50%{box-shadow:0 4px 32px rgba(0,212,255,.7)}}
+
+/* XP BAR */
+.xp-section{
+  position:relative;z-index:5;
+  margin:12px 16px 0;
+}
+.xp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.xp-label{font-size:11px;font-weight:800;color:var(--amber);letter-spacing:.5px}
+.xp-nums{font-size:11px;font-weight:700;color:var(--muted)}
+.xp-track{height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden}
+.xp-fill{
+  height:100%;border-radius:5px;
+  background:linear-gradient(90deg,var(--amber),var(--orange));
+  width:68%;
+  position:relative;overflow:hidden;
+}
+.xp-fill::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+  animation:shimmer 1.5s ease infinite;
+}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}}
+
+/* DAILY QUESTS */
+.section-label{
+  padding:14px 20px 8px;
+  font-family:'Fredoka One',cursive;
+  font-size:18px;letter-spacing:.5px;
+  color:var(--text);
+  position:relative;z-index:5;
+}
+.section-label span{
+  font-size:12px;font-family:'Nunito',sans-serif;font-weight:700;
+  color:var(--muted);margin-left:8px;
+}
+
+.scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scrollable::-webkit-scrollbar{display:none}
+
+.quest-scroll{
+  display:flex;gap:12px;padding:0 16px 8px;
+  overflow-x:auto;position:relative;z-index:5;
+}
+.quest-scroll::-webkit-scrollbar{display:none}
+
+.quest-pill{
+  flex-shrink:0;
+  border-radius:20px;padding:14px 16px;
+  min-width:180px;cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:transform .15s;
+  border:1px solid rgba(255,255,255,.1);
+}
+.quest-pill:active{transform:scale(.95)}
+.quest-pill::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.05),transparent);
+}
+.qp-tag{font-size:10px;font-weight:900;opacity:.7;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.qp-title{font-family:'Fredoka One',cursive;font-size:17px;line-height:1.1;margin-bottom:5px}
+.qp-xp{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.15);border-radius:10px;
+  padding:2px 8px;font-size:11px;font-weight:800;
+}
+
+/* MOOD CHECK */
+.mood-card{
+  margin:0 16px 12px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;padding:16px;
+  position:relative;z-index:5;
+}
+.mood-title{font-family:'Fredoka One',cursive;font-size:16px;margin-bottom:12px}
+.mood-row{display:flex;gap:8px;justify-content:space-between}
+.mood-btn{
+  flex:1;background:rgba(255,255,255,.06);
+  border:2px solid transparent;border-radius:14px;
+  padding:10px 4px;cursor:pointer;text-align:center;
+  transition:all .2s;font-family:'Nunito',sans-serif;
+}
+.mood-btn:active,.mood-btn.picked{border-color:var(--amber);background:rgba(255,184,0,.1)}
+.mood-emoji{font-size:24px;display:block;margin-bottom:4px}
+.mood-label{font-size:10px;font-weight:800;color:var(--muted)}
+
+/* STREAK */
+.streak-card{
+  margin:0 16px 12px;
+  background:linear-gradient(135deg,rgba(255,107,0,.15),rgba(255,45,120,.1));
+  border:1px solid rgba(255,107,0,.3);
+  border-radius:20px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  position:relative;z-index:5;
+}
+.streak-flame{font-size:36px;animation:flameWiggle .4s ease-in-out infinite alternate}
+@keyframes flameWiggle{from{transform:rotate(-5deg) scale(1)}to{transform:rotate(5deg) scale(1.1)}}
+.streak-days{font-family:'Fredoka One',cursive;font-size:28px;color:var(--orange);line-height:1}
+.streak-sub{font-size:12px;font-weight:700;color:var(--muted)}
+.streak-dots{display:flex;gap:5px;margin-left:auto}
+.sd{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;
+}
+.sd.done{background:var(--orange);color:white}
+.sd.now{background:var(--magenta);color:white;animation:sdPulse 1s ease infinite}
+@keyframes sdPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,120,.5)}50%{box-shadow:0 0 0 6px rgba(255,45,120,0)}}
+.sd.empty{background:rgba(255,255,255,.1)}
+
+/* ═══════════════════════════════════════
+   QUEST / SKILL SCREEN
+═══════════════════════════════════════ */
+#quest{
+  background:var(--dark);
+  overflow:hidden;
+}
+.quest-top{
+  background:linear-gradient(135deg,var(--indigo),var(--purple));
+  padding:14px 20px 28px;
+  position:relative;overflow:hidden;
+}
+.quest-top::after{
+  content:'';position:absolute;bottom:-20px;left:0;right:0;
+  height:40px;background:var(--dark);border-radius:50% 50% 0 0;
+}
+.q-back{
+  font-size:14px;font-weight:800;opacity:.8;margin-bottom:10px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:none;background:none;color:white;font-family:'Nunito',sans-serif;
+}
+.q-island-name{font-family:'Fredoka One',cursive;font-size:22px;margin-bottom:2px}
+.q-sub{font-size:13px;opacity:.75;font-weight:700}
+
+/* Steps */
+.step-track{margin:20px 20px 14px;display:flex;gap:6px}
+.step-dot{
+  flex:1;height:8px;border-radius:4px;
+  background:rgba(255,255,255,.1);transition:background .4s;
+}
+.step-dot.active{background:var(--cyan)}
+.step-dot.done{background:var(--lime)}
+
+/* Scenario */
+.scenario-wrap{margin:0 16px 14px;flex:1;overflow-y:auto}
+.scenario-wrap::-webkit-scrollbar{display:none}
+
+.scene-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:24px;padding:20px;
+  margin-bottom:12px;
+}
+.scene-visual{
+  width:100%;height:110px;
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:56px;margin-bottom:14px;
+  background:linear-gradient(135deg,rgba(91,47,232,.3),rgba(168,85,247,.2));
+}
+.scene-title{font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:8px;text-align:center}
+.scene-text{
+  font-size:15px;line-height:1.7;
+  background:rgba(255,255,255,.04);
+  border-radius:14px;padding:14px;
+  border-left:3px solid var(--cyan);
+}
+.read-btn{
+  width:100%;margin-top:10px;
+  background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);
+  border-radius:12px;padding:10px;
+  color:var(--cyan);font-size:13px;font-weight:800;
+  cursor:pointer;font-family:'Nunito',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
+/* Choices */
+.choices-wrap{display:flex;flex-direction:column;gap:8px;margin:0 16px 14px}
+.choice{
+  background:var(--card);border:2px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:14px 16px;
+  cursor:pointer;display:flex;align-items:center;gap:12px;
+  font-size:15px;font-weight:700;line-height:1.4;
+  transition:all .2s;font-family:'Nunito',sans-serif;color:white;
+  text-align:left;
+}
+.choice:active{transform:scale(.97)}
+.choice.correct{border-color:var(--lime);background:rgba(126,211,33,.1)}
+.choice.wrong{border-color:var(--magenta);background:rgba(255,45,120,.1)}
+.choice-ico{font-size:24px;flex-shrink:0}
+
+/* AI Response */
+.ai-bubble{
+  margin:0 16px 14px;
+  background:linear-gradient(135deg,rgba(91,47,232,.3),rgba(168,85,247,.2));
+  border:1px solid rgba(168,85,247,.3);
+  border-radius:20px;padding:16px;
+  display:none;animation:fadeUp .3s ease;
+}
+.ai-bubble.show{display:block}
+.ai-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-orb{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--indigo),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  animation:orbSpin 3s linear infinite;
+}
+@keyframes orbSpin{to{filter:hue-rotate(360deg)}}
+.ai-tag{font-size:10px;font-weight:900;color:var(--purple);letter-spacing:1px;text-transform:uppercase}
+.ai-text{font-size:14px;line-height:1.6}
+.ai-dots{display:flex;gap:4px;padding:4px 0}
+.ai-dots span{
+  width:7px;height:7px;border-radius:50%;background:var(--purple);
+  animation:dotBounce 1s ease infinite;
+}
+.ai-dots span:nth-child(2){animation-delay:.2s}
+.ai-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotBounce{0%,80%,100%{transform:scale(.6)}40%{transform:scale(1)}}
+
+/* Feedback */
+.feedback-pop{
+  margin:0 16px 14px;border-radius:20px;padding:18px;
+  display:none;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);
+  text-align:center;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.feedback-pop.show{display:block}
+.feedback-pop.great{background:linear-gradient(135deg,rgba(126,211,33,.2),rgba(0,212,255,.1));border:2px solid var(--lime)}
+.feedback-pop.try{background:linear-gradient(135deg,rgba(255,184,0,.15),rgba(255,107,0,.1));border:2px solid var(--amber)}
+.fb-emoji{font-size:44px;margin-bottom:8px}
+.fb-title{font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:6px}
+.fb-msg{font-size:14px;line-height:1.6;color:rgba(255,255,255,.85);margin-bottom:14px}
+.next-btn{
+  background:linear-gradient(135deg,var(--indigo),var(--purple));
+  border:none;border-radius:16px;padding:14px 28px;
+  font-family:'Fredoka One',cursive;font-size:18px;color:white;
+  cursor:pointer;width:100%;
+  box-shadow:0 4px 20px rgba(91,47,232,.4);
+  transition:transform .15s;
+}
+.next-btn:active{transform:scale(.97)}
+
+/* ═══════════════════════════════════════
+   MODULE SELECT
+═══════════════════════════════════════ */
+#modules{background:var(--dark);overflow:hidden}
+.mod-header{
+  background:linear-gradient(135deg,#FF6B00,#FF2D78);
+  padding:16px 20px 30px;position:relative;overflow:hidden;
+}
+.mod-header::after{
+  content:'';position:absolute;bottom:-20px;left:0;right:0;
+  height:40px;background:var(--dark);border-radius:50% 50% 0 0;
+}
+.mod-title{font-family:'Fredoka One',cursive;font-size:26px;margin-bottom:4px}
+.mod-sub{font-size:13px;opacity:.8;font-weight:700}
+
+.mod-tabs{
+  display:flex;gap:6px;padding:16px 16px 8px;
+  overflow-x:auto;
+}
+.mod-tabs::-webkit-scrollbar{display:none}
+.mod-tab{
+  flex-shrink:0;
+  background:rgba(255,255,255,.08);border:1px solid transparent;
+  border-radius:20px;padding:7px 14px;
+  font-size:12px;font-weight:800;cursor:pointer;
+  font-family:'Nunito',sans-serif;color:white;transition:all .2s;
+}
+.mod-tab.active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.25)}
+
+.mod-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  padding:0 16px 16px;overflow-y:auto;flex:1;
+}
+.mod-grid::-webkit-scrollbar{display:none}
+
+.mod-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:16px;cursor:pointer;
+  transition:transform .15s;position:relative;overflow:hidden;
+}
+.mod-card:active{transform:scale(.95)}
+.mod-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--accent,var(--indigo));
+}
+.mod-card.locked::after{
+  content:'🔒';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6);border-radius:20px;font-size:28px;
+}
+.mc-emoji{font-size:32px;margin-bottom:8px}
+.mc-name{font-family:'Fredoka One',cursive;font-size:15px;line-height:1.2;margin-bottom:4px}
+.mc-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.mc-xp{
+  display:inline-flex;align-items:center;gap:3px;
+  background:rgba(255,255,255,.08);border-radius:8px;
+  padding:2px 7px;font-size:10px;font-weight:800;margin-top:7px;color:var(--amber);
+}
+.mc-stars{display:flex;gap:2px;margin-top:5px}
+.mc-star{font-size:10px}
+
+/* ═══════════════════════════════════════
+   CALM BREAK — Box Breathing + PMR
+═══════════════════════════════════════ */
+#calm{
+  background:radial-gradient(ellipse at 50% 30%,#1a0d4a,#060318);
+  overflow:hidden;position:relative;
+}
+/* Particles */
+.calm-particles{position:absolute;inset:0;pointer-events:none}
+.cp{
+  position:absolute;border-radius:50%;
+  animation:cpFloat linear infinite;opacity:0;
+}
+@keyframes cpFloat{
+  0%{opacity:0;transform:translateY(100%) scale(0)}
+  10%{opacity:.6}
+  90%{opacity:.3}
+  100%{opacity:0;transform:translateY(-100%) scale(1.5)}
+}
+
+.calm-header{padding:14px 20px 0;position:relative;z-index:5}
+.calm-title{font-family:'Fredoka One',cursive;font-size:26px;margin-bottom:2px}
+.calm-sub{font-size:13px;color:var(--muted);font-weight:700}
+
+.calm-tabs{
+  display:flex;gap:8px;padding:12px 16px;
+  position:relative;z-index:5;overflow-x:auto;
+}
+.calm-tabs::-webkit-scrollbar{display:none}
+.calm-tab{
+  flex-shrink:0;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:8px 16px;font-size:13px;font-weight:800;cursor:pointer;
+  font-family:'Nunito',sans-serif;color:white;transition:all .2s;
+}
+.calm-tab.active{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.4);color:var(--cyan)}
+
+/* BOX BREATHING */
+.box-breath{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:20px;position:relative;z-index:5;
+}
+.box-wrap{position:relative;width:200px;height:200px}
+.box-outline{
+  width:100%;height:100%;border-radius:30px;
+  border:3px solid rgba(0,212,255,.3);
+  position:relative;
+}
+.box-dot{
+  position:absolute;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 20px var(--cyan);
+  top:-9px;left:-9px;
+  transition:all 1s ease;
+}
+.box-sides{
+  position:absolute;inset:-3px;
+  border-radius:30px;
+  border:3px solid transparent;
+  border-top-color:var(--cyan);
+  animation:boxTrace 16s linear infinite;
+}
+@keyframes boxTrace{
+  0%{clip-path:inset(0 100% 100% 0)}
+  25%{clip-path:inset(0 0 100% 0)}
+  50%{clip-path:inset(0 0 0 0)}
+  75%{clip-path:inset(0 0 0 0)}
+  100%{clip-path:inset(0 0 0 0)}
+}
+.box-center{
+  position:absolute;inset:20px;
+  background:rgba(0,212,255,.05);
+  border-radius:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+}
+.box-word{font-family:'Fredoka One',cursive;font-size:17px;color:var(--cyan)}
+.box-count{font-family:'Fredoka One',cursive;font-size:36px;line-height:1}
+.box-instruction{margin-top:16px;font-size:15px;font-weight:700;color:rgba(255,255,255,.7);text-align:center}
+.breath-start-btn{
+  margin-top:20px;
+  background:linear-gradient(135deg,var(--cyan),var(--indigo));
+  border:none;border-radius:20px;padding:14px 36px;
+  font-family:'Fredoka One',cursive;font-size:20px;color:white;
+  cursor:pointer;box-shadow:0 4px 24px rgba(0,212,255,.3);
+  transition:transform .15s;
+}
+.breath-start-btn:active{transform:scale(.96)}
+
+/* LEAVES ON STREAM */
+.leaves-scene{
+  flex:1;position:relative;overflow:hidden;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+}
+.leaves-scene.active{display:flex}
+.stream{
+  position:absolute;bottom:0;left:0;right:0;height:120px;
+  background:linear-gradient(180deg,rgba(0,150,200,.3),rgba(0,100,150,.5));
+  border-radius:50% 50% 0 0 / 20px 20px 0 0;
+}
+.leaf{
+  position:absolute;font-size:28px;
+  animation:leafFlow linear infinite;
+  cursor:pointer;
+}
+@keyframes leafFlow{
+  from{transform:translateX(420px) rotate(0deg);opacity:.9}
+  to{transform:translateX(-60px) rotate(720deg);opacity:.2}
+}
+.leaf-input-area{
+  position:relative;z-index:5;text-align:center;
+  padding:20px;
+}
+.leaf-title{font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:8px}
+.leaf-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.leaf-input{
+  width:100%;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);border-radius:14px;
+  padding:12px;color:white;font-family:'Nunito',sans-serif;font-size:14px;
+  margin-bottom:10px;
+}
+.leaf-input:focus{outline:none;border-color:rgba(0,212,255,.5)}
+.leaf-btn{
+  background:linear-gradient(135deg,#00B4DB,#0083B0);
+  border:none;border-radius:14px;padding:12px 28px;
+  font-family:'Fredoka One',cursive;font-size:18px;color:white;
+  cursor:pointer;
+}
+
+/* AR CALM */
+.ar-calm-card{
+  margin:0 16px;
+  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(91,47,232,.2));
+  border:1px solid rgba(0,212,255,.25);
+  border-radius:20px;padding:18px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;
+  position:relative;z-index:5;transition:transform .15s;
+}
+.ar-calm-card:active{transform:scale(.97)}
+.ar-calm-icon{font-size:38px}
+.ar-calm-text{flex:1}
+.ar-calm-title{font-family:'Fredoka One',cursive;font-size:17px;margin-bottom:3px}
+.ar-calm-sub{font-size:12px;color:var(--muted)}
+.ar-live{
+  background:var(--cyan);color:var(--dark);
+  padding:3px 10px;border-radius:8px;
+  font-size:10px;font-weight:900;animation:liveBlink .8s ease infinite alternate;
+}
+@keyframes liveBlink{from{opacity:1}to{opacity:.5}}
+
+/* ═══════════════════════════════════════
+   AR WORLD SCREEN (Pokemon Go style)
+═══════════════════════════════════════ */
+#arworld{
+  background:#000;
+  position:relative;overflow:hidden;
+}
+.ar-camera{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,
+    #1a3a1a 0%,
+    #2d5a2d 30%,
+    #4a7a4a 50%,
+    #2d5a2d 70%,
+    #1a3a1a 100%);
+  overflow:hidden;
+}
+/* Simulated camera environment */
+.ar-env-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,255,100,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,100,.05) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.ar-scan-line{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,255,100,.6),transparent);
+  animation:scanLine 3s ease-in-out infinite;
+}
+@keyframes scanLine{0%{top:0%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+
+/* AR creatures floating */
+.ar-creature{
+  position:absolute;cursor:pointer;
+  animation:arFloat ease-in-out infinite;
+  z-index:10;
+}
+@keyframes arFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-15px) scale(1.05)}}
+.ar-creature-body{
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(8px);
+  border:2px solid rgba(255,255,255,.3);
+  border-radius:24px;padding:12px;
+  text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.3);
+  position:relative;
+}
+.ar-creature-body::after{
+  content:'';position:absolute;inset:-4px;border-radius:26px;
+  border:2px solid;animation:creatureGlow 2s ease infinite;
+}
+.ar-creature-emoji{font-size:38px;display:block;margin-bottom:4px}
+.ar-creature-name{font-family:'Fredoka One',cursive;font-size:12px;white-space:nowrap}
+.ar-creature-badge{
+  position:absolute;top:-8px;right:-8px;
+  background:var(--amber);color:white;
+  border-radius:50%;width:22px;height:22px;
+  font-size:11px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid rgba(255,255,255,.2);
+}
+
+/* AR UI overlays */
+.ar-top-bar{
+  position:absolute;top:0;left:0;right:0;
+  padding:40px 16px 14px;
+  background:linear-gradient(180deg,rgba(0,0,0,.7),transparent);
+  z-index:20;display:flex;align-items:center;justify-content:space-between;
+}
+.ar-close{
+  background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.2);border-radius:12px;
+  padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;
+  border:none;color:white;font-family:'Nunito',sans-serif;
+}
+.ar-title-badge{
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(0,212,255,.4);border-radius:20px;
+  padding:6px 16px;font-family:'Fredoka One',cursive;font-size:14px;
+  color:var(--cyan);
+}
+.ar-compass{font-size:24px;animation:compassSpin 4s linear infinite}
+@keyframes compassSpin{to{transform:rotate(360deg)}}
+
+.ar-bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);
+  padding:30px 16px 90px;
+  z-index:20;
+}
+.ar-hint{
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:12px 16px;
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.8);
+  text-align:center;margin-bottom:12px;
+}
+.ar-skill-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.ar-skill-chips::-webkit-scrollbar{display:none}
+.ar-chip{
+  flex-shrink:0;border-radius:20px;padding:8px 14px;
+  font-size:12px;font-weight:800;cursor:pointer;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);transition:all .2s;
+}
+.ar-chip:active{transform:scale(.92);background:rgba(255,255,255,.2)}
+
+/* AR Catch modal */
+.ar-catch-modal{
+  position:absolute;inset:0;z-index:30;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(4px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+}
+.ar-catch-modal.show{display:flex;animation:fadeUp .3s ease}
+.ar-catch-card{
+  background:var(--card);border:1px solid rgba(255,255,255,.1);
+  border-radius:28px;padding:24px;width:100%;max-width:340px;
+  text-align:center;
+}
+.ar-catch-emoji{font-size:64px;margin-bottom:8px;animation:catchBounce .5s ease infinite alternate}
+@keyframes catchBounce{from{transform:scale(1)}to{transform:scale(1.1)}}
+.ar-catch-title{font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:6px}
+.ar-catch-sub{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.ar-catch-question{
+  background:rgba(255,255,255,.06);border-radius:14px;padding:14px;
+  font-size:15px;line-height:1.6;margin-bottom:14px;text-align:left;
+}
+.ar-catch-choices{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.ar-catch-choice{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;
+  cursor:pointer;text-align:left;color:white;font-family:'Nunito',sans-serif;
+  transition:all .15s;
+}
+.ar-catch-choice:active{background:rgba(91,47,232,.3);border-color:var(--indigo)}
+.ar-catch-choice.correct{background:rgba(126,211,33,.15);border-color:var(--lime)}
+.ar-catch-choice.wrong{background:rgba(255,45,120,.15);border-color:var(--magenta)}
+.ar-dismiss{
+  background:rgba(255,255,255,.1);border:none;border-radius:14px;
+  padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;
+  color:var(--muted);cursor:pointer;width:100%;
+}
+
+/* ═══════════════════════════════════════
+   BUDDY / AI CHAT
+═══════════════════════════════════════ */
+#buddy{
+  background:radial-gradient(ellipse at 50% 20%,#2d1040,#0F0A2E);
+  overflow:hidden;
+}
+.buddy-top{
+  background:linear-gradient(135deg,#FF2D78,#FF6B00);
+  padding:16px 20px 28px;position:relative;overflow:hidden;
+}
+.buddy-top::after{
+  content:'';position:absolute;bottom:-20px;left:0;right:0;
+  height:40px;background:#0F0A2E;border-radius:50% 50% 0 0;
+}
+.buddy-avatar-big{font-size:48px;margin-bottom:4px}
+.buddy-name-big{font-family:'Fredoka One',cursive;font-size:24px}
+.buddy-tagline{font-size:13px;opacity:.8;font-weight:700}
+
+.chat-messages{
+  flex:1;overflow-y:auto;padding:16px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.chat-messages::-webkit-scrollbar{display:none}
+.cmsg{padding:12px 15px;border-radius:20px;font-size:14px;line-height:1.6;max-width:82%;animation:fadeUp .25s ease}
+.cmsg.ai{
+  background:var(--card);color:white;
+  border-radius:20px 20px 20px 4px;align-self:flex-start;
+}
+.cmsg.user{
+  background:linear-gradient(135deg,var(--magenta),var(--orange));color:white;
+  border-radius:20px 20px 4px 20px;align-self:flex-end;
+}
+.cmsg-header{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.mini-orb{
+  width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(135deg,var(--indigo),var(--cyan));
+  font-size:10px;display:flex;align-items:center;justify-content:center;
+}
+.mini-label{font-size:10px;font-weight:900;color:var(--purple)}
+
+.quick-chips{padding:4px 16px 10px;display:flex;flex-wrap:wrap;gap:7px}
+.qchip{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:7px 13px;font-size:12px;font-weight:800;
+  cursor:pointer;color:white;font-family:'Nunito',sans-serif;transition:all .15s;
+}
+.qchip:active{background:rgba(255,45,120,.2);border-color:var(--magenta)}
+.chat-bar{
+  display:flex;gap:8px;padding:8px 14px 20px;
+}
+.chat-inp{
+  flex:1;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:12px 14px;color:white;font-family:'Nunito',sans-serif;font-size:14px;
+}
+.chat-inp:focus{outline:none;border-color:var(--purple)}
+.send{
+  width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(135deg,var(--magenta),var(--orange));
+  border:none;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* ═══════════════════════════════════════
+   WIN SCREEN
+═══════════════════════════════════════ */
+#win{
+  position:relative;overflow:hidden;
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:30px 24px;
+}
+#win.active{display:flex}
+.win-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%,#3B1FA8,#0F0A2E);
+}
+/* Confetti */
+.confetti-piece{
+  position:absolute;border-radius:3px;
+  animation:confettiFall linear infinite;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+  100%{transform:translateY(900px) rotate(720deg);opacity:0}
+}
+.win-content{position:relative;z-index:5;width:100%}
+.win-mascot{font-size:72px;animation:winBounce .6s ease infinite alternate;margin-bottom:8px}
+@keyframes winBounce{from{transform:scale(1) rotate(-3deg)}to{transform:scale(1.08) rotate(3deg)}}
+.win-title{font-family:'Fredoka One',cursive;font-size:38px;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--amber),var(--orange),var(--magenta));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.win-sub{font-size:16px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:20px}
+.xp-burst{
+  background:linear-gradient(135deg,rgba(255,184,0,.2),rgba(255,107,0,.15));
+  border:2px solid rgba(255,184,0,.4);border-radius:20px;
+  padding:16px 28px;margin-bottom:20px;display:inline-block;
+}
+.xp-burst-num{font-family:'Fredoka One',cursive;font-size:44px;color:var(--amber)}
+.xp-burst-label{font-size:13px;color:rgba(255,255,255,.7);font-weight:700}
+.win-badges{display:flex;gap:10px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.wb{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  border-radius:16px;padding:12px 14px;font-size:28px;
+}
+.real-world-btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--lime),#00A86B);
+  border:none;border-radius:20px;padding:16px;
+  font-family:'Fredoka One',cursive;font-size:22px;color:white;
+  cursor:pointer;box-shadow:0 6px 24px rgba(126,211,33,.35);
+  margin-bottom:10px;transition:transform .15s;
+}
+.real-world-btn:active{transform:scale(.97)}
+.home-btn{
+  background:rgba(255,255,255,.1);border:none;border-radius:16px;padding:12px;
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--muted);
+  cursor:pointer;width:100%;
+}
+
+/* ═══════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════ */
+.bottom-nav{
+  display:flex;background:rgba(15,10,46,.95);
+  border-top:1px solid rgba(255,255,255,.07);
+  padding:8px 0 18px;
+  backdrop-filter:blur(20px);
+  position:relative;z-index:50;flex-shrink:0;
+}
+.bnav{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 2px;cursor:pointer;border:none;background:none;
+  font-family:'Nunito',sans-serif;position:relative;transition:transform .15s;
+}
+.bnav:active{transform:scale(.85)}
+.bnav-icon{font-size:24px;transition:filter .2s}
+.bnav-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.35);transition:color .2s}
+.bnav.active .bnav-label{color:var(--cyan)}
+.bnav.active .bnav-icon{filter:drop-shadow(0 2px 8px rgba(0,212,255,.7))}
+.bnav-dot{
+  position:absolute;top:4px;right:22%;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--magenta);border:1.5px solid var(--navy);
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><span style="color:var(--amber)">🔋 ▶</span></div>
+
+  <!-- ══════════ HOME ══════════ -->
+  <div class="screen active" id="home">
+    <div class="stars" id="stars"></div>
+    <div class="aurora"></div>
+
+    <div class="home-header">
+      <div class="player-info">
+        <div class="avatar-ring"><div class="avatar-inner">🦊</div></div>
+        <div>
+          <div class="player-name">Marcus</div>
+          <div class="player-level">⚡ LEVEL 7 EXPLORER</div>
+        </div>
+      </div>
+      <div class="header-pills">
+        <div class="pill-stat"><span>🔥</span><span class="pill-fire">9</span></div>
+        <div class="pill-stat"><span>⭐</span><span class="pill-star">340</span></div>
+      </div>
+    </div>
+
+    <!-- WORLD MAP -->
+    <div class="world-map">
+      <!-- Island 1: Speak Up -->
+      <div class="island" style="left:22px;bottom:40px;animation-duration:3.2s" onclick="goQuest('speak')">
+        <div class="island-base" style="width:82px;height:82px;background:linear-gradient(135deg,#FF6B00,#FF2D78)">
+          <div class="island-glow" style="background:rgba(255,107,0,.5)"></div>
+          <div class="island-emoji">🗣️</div>
+          <div class="island-name">SPEAK UP</div>
+        </div>
+        <div class="island-badge">!</div>
+        <div class="island-shadow"></div>
+      </div>
+
+      <!-- Island 2: Feel Good -->
+      <div class="island" style="left:130px;bottom:70px;animation-duration:2.8s" onclick="showScreen('calm')">
+        <div class="island-base" style="width:72px;height:72px;background:linear-gradient(135deg,#00D4FF,#5B2FE8)">
+          <div class="island-glow" style="background:rgba(0,212,255,.5)"></div>
+          <div class="island-emoji">☁️</div>
+          <div class="island-name">CALM ZONE</div>
+        </div>
+        <div class="island-shadow"></div>
+      </div>
+
+      <!-- Island 3: Think -->
+      <div class="island" style="right:30px;bottom:55px;animation-duration:3.5s" onclick="goQuest('think')">
+        <div class="island-base" style="width:68px;height:68px;background:linear-gradient(135deg,#A855F7,#5B2FE8)">
+          <div class="island-glow" style="background:rgba(168,85,247,.5)"></div>
+          <div class="island-emoji">💭</div>
+          <div class="island-name">THINK IT</div>
+        </div>
+        <div class="island-shadow"></div>
+      </div>
+
+      <!-- Island 4: Locked -->
+      <div class="island island-locked" style="right:28px;bottom:140px;animation-duration:4s">
+        <div class="island-base" style="width:56px;height:56px;background:linear-gradient(135deg,#7ED321,#00A86B)">
+          <div class="island-emoji">🌟</div>
+          <div class="island-name">LOCKED</div>
+        </div>
+        <div class="island-shadow"></div>
+      </div>
+
+      <!-- Island 5: Worry Time -->
+      <div class="island" style="left:180px;bottom:140px;animation-duration:3.8s" onclick="goQuest('worry')">
+        <div class="island-base" style="width:60px;height:60px;background:linear-gradient(135deg,#FFB800,#FF6B00)">
+          <div class="island-glow" style="background:rgba(255,184,0,.5)"></div>
+          <div class="island-emoji">🛡️</div>
+          <div class="island-name">WORRY BUSTER</div>
+        </div>
+        <div class="island-shadow"></div>
+      </div>
+
+      <button class="ar-fab" onclick="showScreen('arworld')">🔮 AR WORLD</button>
+    </div>
+
+    <!-- XP BAR -->
+    <div class="xp-section">
+      <div class="xp-row">
+        <span class="xp-label">⚡ LEVEL 7 XP</span>
+        <span class="xp-nums">340 / 500</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill"></div></div>
+    </div>
+
+    <div class="scrollable" style="flex:1">
+      <!-- MOOD CHECK -->
+      <div class="mood-card">
+        <div class="mood-title">🌡️ How do you feel right now?</div>
+        <div class="mood-row">
+          <div class="mood-btn" onclick="pickMood(this)"><span class="mood-emoji">😄</span><span class="mood-label">GREAT</span></div>
+          <div class="mood-btn" onclick="pickMood(this)"><span class="mood-emoji">🙂</span><span class="mood-label">OKAY</span></div>
+          <div class="mood-btn" onclick="pickMood(this)"><span class="mood-emoji">😐</span><span class="mood-label">MEH</span></div>
+          <div class="mood-btn" onclick="pickMood(this)"><span class="mood-emoji">😰</span><span class="mood-label">NERVOUS</span></div>
+          <div class="mood-btn" onclick="pickMood(this)"><span class="mood-emoji">😔</span><span class="mood-label">SAD</span></div>
+        </div>
+      </div>
+
+      <!-- STREAK -->
+      <div class="streak-card">
+        <div class="streak-flame">🔥</div>
+        <div>
+          <div class="streak-days">9 Days!</div>
+          <div class="streak-sub">Don't break it! 💪</div>
+        </div>
+        <div class="streak-dots">
+          <div class="sd done">✓</div><div class="sd done">✓</div><div class="sd done">✓</div>
+          <div class="sd done">✓</div><div class="sd done">✓</div>
+          <div class="sd now">★</div><div class="sd empty"></div>
+        </div>
+      </div>
+
+      <!-- TODAY'S QUESTS -->
+      <div class="section-label">Today's Quests <span>3 left</span></div>
+      <div class="quest-scroll">
+        <div class="quest-pill" style="background:linear-gradient(135deg,#FF2D78,#FF6B00)" onclick="goQuest('speak')">
+          <div class="qp-tag">🗣️ Speak Up Island</div>
+          <div class="qp-title">Ask for Help at Work</div>
+          <div class="qp-xp">⭐ +50 Stars</div>
+        </div>
+        <div class="quest-pill" style="background:linear-gradient(135deg,#5B2FE8,#00D4FF)" onclick="goQuest('think')">
+          <div class="qp-tag">💭 Think Island</div>
+          <div class="qp-title">Flip a Bad Thought</div>
+          <div class="qp-xp">⭐ +40 Stars</div>
+        </div>
+        <div class="quest-pill" style="background:linear-gradient(135deg,#FFB800,#7ED321)" onclick="showScreen('calm')">
+          <div class="qp-tag">☁️ Calm Zone</div>
+          <div class="qp-title">Box Breathing Challenge</div>
+          <div class="qp-xp">⭐ +30 Stars</div>
+        </div>
+        <div class="quest-pill" style="background:linear-gradient(135deg,#A855F7,#FF2D78)" onclick="showScreen('arworld')">
+          <div class="qp-tag">🔮 AR World</div>
+          <div class="qp-title">Catch a Calm Creature!</div>
+          <div class="qp-xp">⭐ +60 Stars</div>
+        </div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ QUEST ══════════ -->
+  <div class="screen" id="quest">
+    <div class="quest-top">
+      <button class="q-back" onclick="showScreen('home')">← My World</button>
+      <div class="q-island-name" id="questIslandName">🗣️ Speak Up Island</div>
+      <div class="q-sub" id="questIslandSub">Ask for Help at Work</div>
+    </div>
+
+    <div class="step-track">
+      <div class="step-dot active" id="sd1"></div>
+      <div class="step-dot" id="sd2"></div>
+      <div class="step-dot" id="sd3"></div>
+    </div>
+
+    <div class="scenario-wrap" id="scenarioWrap">
+      <div class="scene-card">
+        <div class="scene-visual" id="sceneVisual">🏢</div>
+        <div class="scene-title" id="sceneTitle">You Are at Work</div>
+        <div class="scene-text" id="sceneText">You are at work. Your boss asks you to do something new. But you don't understand what they mean. You feel a little nervous. 😰 What do you do?</div>
+        <button class="read-btn" onclick="readAloud()">🔊 Read this to me</button>
+      </div>
+      <div class="choices-wrap" id="choicesWrap"></div>
+      <div class="ai-bubble" id="aiBubble">
+        <div class="ai-header">
+          <div class="ai-orb">✦</div>
+          <div><div class="ai-tag">Sparky is thinking...</div></div>
+        </div>
+        <div class="ai-dots" id="aiDots"><span></span><span></span><span></span></div>
+        <div class="ai-text" id="aiText" style="display:none"></div>
+      </div>
+      <div class="feedback-pop" id="feedbackPop">
+        <div class="fb-emoji" id="fbEmoji"></div>
+        <div class="fb-title" id="fbTitle"></div>
+        <div class="fb-msg" id="fbMsg"></div>
+        <button class="next-btn" id="nextBtn" onclick="nextStep()">Next →</button>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ MODULES ══════════ -->
+  <div class="screen" id="modules">
+    <div class="mod-header">
+      <button class="q-back" onclick="showScreen('home')">← My World</button>
+      <div class="mod-title">🧩 Skill Islands</div>
+      <div class="mod-sub">Pick what to practice today</div>
+    </div>
+    <div class="mod-tabs">
+      <button class="mod-tab active" onclick="filterMods(this,'all')">All</button>
+      <button class="mod-tab" onclick="filterMods(this,'cbt')">Feelings & Thinking</button>
+      <button class="mod-tab" onclick="filterMods(this,'life')">Real Life Skills</button>
+      <button class="mod-tab" onclick="filterMods(this,'calm')">Calm Tools</button>
+    </div>
+    <div class="mod-grid" id="modGrid">
+      <div class="mod-card" style="--accent:var(--magenta)" onclick="goQuest('speak')">
+        <div class="mc-emoji">🗣️</div>
+        <div class="mc-name">Speak Up</div>
+        <div class="mc-desc">Ask for help, say what you need</div>
+        <div class="mc-xp">⭐ +50</div>
+        <div class="mc-stars">⭐⭐⭐☆☆</div>
+      </div>
+      <div class="mod-card" style="--accent:var(--purple)" onclick="goQuest('think')">
+        <div class="mc-emoji">💭</div>
+        <div class="mc-name">Flip a Thought</div>
+        <div class="mc-desc">Change sneaky thoughts to better ones</div>
+        <div class="mc-xp">⭐ +40</div>
+        <div class="mc-stars">⭐⭐☆☆☆</div>
+      </div>
+      <div class="mod-card" style="--accent:var(--cyan)" onclick="showScreen('calm')">
+        <div class="mc-emoji">🌬️</div>
+        <div class="mc-name">Box Breathing</div>
+        <div class="mc-desc">Calm your body in 2 minutes</div>
+        <div class="mc-xp">⭐ +30</div>
+        <div class="mc-stars">⭐⭐⭐⭐☆</div>
+      </div>
+      <div class="mod-card" style="--accent:var(--amber)" onclick="goQuest('worry')">
+        <div class="mc-emoji">🛡️</div>
+        <div class="mc-name">Worry Buster</div>
+        <div class="mc-desc">Put your worries on a leaf and let them float away</div>
+        <div class="mc-xp">⭐ +45</div>
+        <div class="mc-stars">⭐⭐⭐☆☆</div>
+      </div>
+      <div class="mod-card" style="--accent:var(--lime)">
+        <div class="mc-emoji">📅</div>
+        <div class="mc-name">My Happy Day</div>
+        <div class="mc-desc">Plan fun things so you feel better</div>
+        <div class="mc-xp">⭐ +35</div>
+        <div class="mc-stars">⭐☆☆☆☆</div>
+      </div>
+      <div class="mod-card locked" style="--accent:var(--indigo)">
+        <div class="mc-emoji">🍎</div>
+        <div class="mc-name">Healthy Me</div>
+        <div class="mc-desc">Recipes and healthy living</div>
+        <div class="mc-xp">⭐ +60</div>
+      </div>
+      <div class="mod-card locked" style="--accent:var(--orange)">
+        <div class="mc-emoji">💪</div>
+        <div class="mc-name">Body Relax</div>
+        <div class="mc-desc">Progressive muscle relaxation</div>
+        <div class="mc-xp">⭐ +40</div>
+      </div>
+      <div class="mod-card locked" style="--accent:var(--magenta)">
+        <div class="mc-emoji">🃏</div>
+        <div class="mc-name">My Values</div>
+        <div class="mc-desc">What matters most to you?</div>
+        <div class="mc-xp">⭐ +55</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ CALM ══════════ -->
+  <div class="screen" id="calm">
+    <div class="calm-particles" id="calmParticles"></div>
+    <div class="calm-header">
+      <button class="q-back" onclick="showScreen('home')" style="background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer">← My World</button>
+      <div class="calm-title">☁️ Calm Time</div>
+      <div class="calm-sub">This is your safe space. No rush here.</div>
+    </div>
+    <div class="calm-tabs">
+      <button class="calm-tab active" onclick="switchCalm(this,'box')">🫁 Box Breathing</button>
+      <button class="calm-tab" onclick="switchCalm(this,'leaves')">🍃 Leaves on Stream</button>
+      <button class="calm-tab" onclick="switchCalm(this,'pmr')">💪 Body Relax</button>
+    </div>
+
+    <!-- BOX BREATHING -->
+    <div id="calmBox" class="box-breath">
+      <div class="box-wrap">
+        <div class="box-outline" id="boxOutline">
+          <div class="box-dot" id="boxDot"></div>
+          <div class="box-center">
+            <div class="box-word" id="boxWord">READY?</div>
+            <div class="box-count" id="boxCount">▶</div>
+          </div>
+        </div>
+      </div>
+      <div class="breath-instruction" id="breathInstr">Tap the button to start breathing with me</div>
+      <button class="breath-start-btn" id="breathBtn" onclick="toggleBreath()">Start Breathing 🌊</button>
+    </div>
+
+    <!-- LEAVES -->
+    <div id="calmLeaves" class="leaves-scene">
+      <div class="leaf-input-area">
+        <div class="leaf-title">🍃 Put It on a Leaf</div>
+        <div class="leaf-desc">Think of a worry or bad feeling. Type it below. Then watch it float away on the stream.</div>
+        <input class="leaf-input" id="leafInput" placeholder="My worry is...">
+        <button class="leaf-btn" onclick="releaseLeaf()">Let it Float Away 🍃</button>
+      </div>
+      <div class="stream"></div>
+    </div>
+
+    <!-- PMR placeholder -->
+    <div id="calmPmr" style="display:none;padding:20px;text-align:center;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:10px">
+      <div style="font-size:56px">💪</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:22px">Body Relax</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7">Squeeze your hands really tight... hold it... now let go! Feel the warm feeling? That's your muscles relaxing. 😌</div>
+      <button class="breath-start-btn" style="margin-top:12px;font-size:16px" onclick="startPMR()">Start Body Relax 💪</button>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="ar-calm-card" onclick="showScreen('arworld')">
+      <div class="ar-calm-icon">🔮</div>
+      <div class="ar-calm-text">
+        <div class="ar-calm-title">Open AR Calm World</div>
+        <div class="ar-calm-sub">Fill your room with calm creatures & breathing guides</div>
+      </div>
+      <div class="ar-live">LIVE</div>
+    </div>
+    <div style="height:10px"></div>
+  </div>
+
+  <!-- ══════════ AR WORLD ══════════ -->
+  <div class="screen" id="arworld" style="position:relative;flex:1">
+    <div class="ar-camera">
+      <div class="ar-env-grid"></div>
+      <div class="ar-scan-line"></div>
+
+      <!-- Trees/nature elements -->
+      <div style="position:absolute;bottom:100px;left:20px;font-size:48px">🌳</div>
+      <div style="position:absolute;bottom:110px;right:30px;font-size:56px">🌲</div>
+      <div style="position:absolute;bottom:90px;left:100px;font-size:36px">🌿</div>
+      <div style="position:absolute;bottom:95px;right:100px;font-size:32px">🌾</div>
+      <div style="position:absolute;top:200px;left:40px;font-size:24px;opacity:.4">✨</div>
+      <div style="position:absolute;top:280px;right:50px;font-size:20px;opacity:.3;animation:twinkle 1.5s ease infinite">✨</div>
+
+      <!-- AR Creatures -->
+      <div class="ar-creature" style="top:100px;left:50px;animation-duration:3s" onclick="catchCreature('Breathe Bear','🐻‍❄️','Breathing','Feeling really nervous right now?')">
+        <div class="ar-creature-body" style="--glow:#00D4FF">
+          <div style="position:absolute;inset:-4px;border-radius:26px;border:2px solid rgba(0,212,255,.6);animation:glowPulse 2s ease infinite"></div>
+          <span class="ar-creature-emoji">🐻‍❄️</span>
+          <div class="ar-creature-name" style="color:#00D4FF">BREATHE BEAR</div>
+        </div>
+        <div class="ar-creature-badge">!</div>
+      </div>
+
+      <div class="ar-creature" style="top:160px;right:40px;animation-duration:2.5s;animation-delay:.5s" onclick="catchCreature('Think Fox','🦊','Thought Flipping','You just heard something that made you feel bad about yourself.')">
+        <div class="ar-creature-body">
+          <div style="position:absolute;inset:-4px;border-radius:26px;border:2px solid rgba(255,107,0,.6);animation:glowPulse 2s ease infinite .3s"></div>
+          <span class="ar-creature-emoji">🦊</span>
+          <div class="ar-creature-name" style="color:#FF6B00">THINK FOX</div>
+        </div>
+        <div class="ar-creature-badge">!</div>
+      </div>
+
+      <div class="ar-creature" style="top:230px;left:140px;animation-duration:4s;animation-delay:1s" onclick="catchCreature('Speak Owl','🦉','Self-Advocacy','You want something but don\'t know how to ask.')">
+        <div class="ar-creature-body">
+          <div style="position:absolute;inset:-4px;border-radius:26px;border:2px solid rgba(168,85,247,.6);animation:glowPulse 2s ease infinite .6s"></div>
+          <span class="ar-creature-emoji">🦉</span>
+          <div class="ar-creature-name" style="color:#A855F7">SPEAK OWL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ar-top-bar">
+      <button class="ar-close" onclick="showScreen('home')">✕ Exit AR</button>
+      <div class="ar-title-badge">🔮 AR WORLD</div>
+      <div class="ar-compass">🧭</div>
+    </div>
+
+    <div class="ar-bottom">
+      <div class="ar-hint">👆 Tap a creature to catch it and practice a skill!</div>
+      <div class="ar-skill-chips">
+        <div class="ar-chip" style="border-color:rgba(0,212,255,.4);color:var(--cyan)">🐻‍❄️ Breathe Bear — Nearby!</div>
+        <div class="ar-chip" style="border-color:rgba(255,107,0,.4);color:var(--orange)">🦊 Think Fox — Nearby!</div>
+        <div class="ar-chip" style="border-color:rgba(168,85,247,.4);color:var(--purple)">🦉 Speak Owl — Nearby!</div>
+      </div>
+    </div>
+
+    <!-- CATCH MODAL -->
+    <div class="ar-catch-modal" id="arCatchModal">
+      <div class="ar-catch-card">
+        <div class="ar-catch-emoji" id="arCreatureEmoji">🐻‍❄️</div>
+        <div class="ar-catch-title" id="arCreatureName">Breathe Bear appeared!</div>
+        <div class="ar-catch-sub" id="arCreatureSub">Practice Breathing to catch it!</div>
+        <div class="ar-catch-question" id="arCatchQ">What's the first step when you feel really nervous?</div>
+        <div class="ar-catch-choices" id="arCatchChoices"></div>
+        <div id="arCatchFeedback" style="display:none;background:rgba(126,211,33,.1);border:1px solid var(--lime);border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;font-weight:700;text-align:center"></div>
+        <button class="ar-dismiss" id="arDismissBtn" onclick="dismissAR()">Close ✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ BUDDY ══════════ -->
+  <div class="screen" id="buddy">
+    <div class="buddy-top">
+      <button class="q-back" onclick="showScreen('home')" style="background:none;border:none;color:rgba(255,255,255,.8);font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer">← My World</button>
+      <div class="buddy-avatar-big">🦊</div>
+      <div class="buddy-name-big">Sparky</div>
+      <div class="buddy-tagline">Your AI buddy — always here ✨</div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="cmsg ai">
+        <div class="cmsg-header"><div class="mini-orb">✦</div><span class="mini-label">SPARKY</span></div>
+        Hey Marcus!! 😊 I'm SO happy you're here! What do you need today?
+      </div>
+    </div>
+    <div class="quick-chips" id="quickChips">
+      <button class="qchip" onclick="sendQuick('I need help calming down 😰')">😰 I need to calm down</button>
+      <button class="qchip" onclick="sendQuick('Can we practice something together?')">🎮 Let\'s practice!</button>
+      <button class="qchip" onclick="sendQuick('I used my skill in real life today! 🎉')">🌎 I did it for real!!</button>
+      <button class="qchip" onclick="sendQuick('I feel really sad right now 😔')">😔 I feel sad</button>
+      <button class="qchip" onclick="sendQuick('I am really worried about something')">😟 I\'m worried</button>
+    </div>
+    <div class="chat-bar">
+      <input class="chat-inp" id="chatInp" placeholder="Tell Sparky anything..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+
+  <!-- ══════════ WIN ══════════ -->
+  <div class="screen" id="win">
+    <div class="win-bg"></div>
+    <div id="confettiContainer"></div>
+    <div class="win-content">
+      <div class="win-mascot">🏆</div>
+      <div class="win-title">YOU DID IT!!</div>
+      <div class="win-sub" id="winMsg">Amazing!! You practiced how to speak up. You're getting SO good at this! 🌟</div>
+      <div class="xp-burst">
+        <div class="xp-burst-num">+50 ⭐</div>
+        <div class="xp-burst-label">Stars earned! Level up coming soon!</div>
+      </div>
+      <div class="win-badges">
+        <div class="wb">🗣️</div><div class="wb">🔥</div><div class="wb">⭐</div>
+      </div>
+      <button class="real-world-btn" onclick="logRealWorld()">
+        🌎 I did this in REAL LIFE too!!
+      </button>
+      <button class="home-btn" onclick="showScreen('home')">Go back to my world</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bottomNav">
+    <button class="bnav active" onclick="navTo('home',this)">
+      <span class="bnav-icon">🌍</span>
+      <span class="bnav-label">My World</span>
+    </button>
+    <button class="bnav" onclick="navTo('modules',this)">
+      <span class="bnav-icon">🧩</span>
+      <span class="bnav-label">Skills</span>
+      <div class="bnav-dot"></div>
+    </button>
+    <button class="bnav" onclick="navTo('calm',this)">
+      <span class="bnav-icon">☁️</span>
+      <span class="bnav-label">Calm</span>
+    </button>
+    <button class="bnav" onclick="navTo('arworld',this)">
+      <span class="bnav-icon">🔮</span>
+      <span class="bnav-label">AR World</span>
+    </button>
+    <button class="bnav" onclick="navTo('buddy',this)">
+      <span class="bnav-icon">🦊</span>
+      <span class="bnav-label">Sparky</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ── Stars ──
+const starContainer = document.getElementById('stars');
+for(let i=0;i<60;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const size=Math.random()*3+1;
+  s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${Math.random()*3+1.5}s;animation-delay:${Math.random()*3}s`;
+  starContainer.appendChild(s);
+}
+
+// ── Calm particles ──
+const cp=document.getElementById('calmParticles');
+const colors=['#00D4FF','#A855F7','#FF2D78','#FFB800','#7ED321'];
+for(let i=0;i<20;i++){
+  const p=document.createElement('div');
+  p.className='cp';
+  const size=Math.random()*8+4;
+  p.style.cssText=`width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:${Math.random()*100}%;animation-duration:${Math.random()*6+6}s;animation-delay:${Math.random()*6}s`;
+  cp.appendChild(p);
+}
+
+// ── Screen nav ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const noNav=['arworld','win'];
+  document.getElementById('bottomNav').style.display=noNav.includes(id)?'none':'flex';
+}
+function navTo(id,btn){
+  showScreen(id);
+  document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── QUEST DATA ──
+const questData={
+  speak:{
+    island:'🗣️ Speak Up Island',sub:'Ask for Help at Work',
+    steps:[
+      {visual:'🏢',title:'You Are at Work',text:'You are at work. Your boss asks you to do something new. But you don\'t understand what they mean. You feel a little nervous. 😰\n\nWhat do you do?',
+       choices:[{t:'Say nothing and hope you figure it out',i:'😶',c:false},{t:'Say: "Can you explain that again? I want to do it right."',i:'✋',c:true},{t:'Walk away and ask someone else later',i:'🏃',c:false}]},
+      {visual:'🍕',title:'Lunch Mix-Up',text:'Your coworker took your lunch by mistake. You feel upset. 😤\n\nHow do you handle it?',
+       choices:[{t:'Say nothing and feel bad all day',i:'😔',c:false},{t:'Get really angry at them',i:'😠',c:false},{t:'Say: "Hey, I think you took my lunch. Can I have it back?"',i:'😊',c:true}]},
+      {visual:'📋',title:'A New Task',text:'Your boss gives you a big new task. You\'re not sure how to start. 🤔\n\nWhat\'s the FIRST thing you do?',
+       choices:[{t:'Panic and do nothing',i:'😱',c:false},{t:'Say: "What should I do first?"',i:'🙋',c:true},{t:'Pretend you understand and guess',i:'🎲',c:false}]}
+    ]
+  },
+  think:{
+    island:'💭 Think Island',sub:'Flip a Bad Thought',
+    steps:[
+      {visual:'🧠',title:'A Sneaky Thought',text:'You make a mistake at work. A sneaky thought pops up: "I\'m so stupid. I always mess up." 😔\n\nIs this thought TRUE or is it a SNEAKY thought?',
+       choices:[{t:'It\'s true — I am stupid',i:'😔',c:false},{t:'It\'s a sneaky thought — making a mistake doesn\'t mean I\'m stupid',i:'💡',c:true},{t:'I don\'t know',i:'🤷',c:false}]},
+      {visual:'🔄',title:'Flip It!',text:'Now let\'s flip the sneaky thought into a BETTER thought. Which one feels better and is more true?',
+       choices:[{t:'I\'m terrible at everything',i:'😢',c:false},{t:'I made one mistake. Everyone makes mistakes. I can learn from it.',i:'💪',c:true},{t:'I should just give up',i:'🚪',c:false}]},
+      {visual:'🌟',title:'Use It for Real',text:'Your friend says "You always say the wrong thing." You feel bad. What do you do with that sneaky thought?',
+       choices:[{t:'Believe them — they must be right',i:'😔',c:false},{t:'Say nothing and feel bad',i:'😶',c:false},{t:'Remind yourself: "One person saying this doesn\'t make it true"',i:'🛡️',c:true}]}
+    ]
+  },
+  worry:{
+    island:'🛡️ Worry Buster',sub:'Handle Your Worries',
+    steps:[
+      {visual:'😰',title:'A Big Worry',text:'You are really worried about going to a doctor\'s appointment tomorrow. The worry feels very big. 😰\n\nWhat is a good first step?',
+       choices:[{t:'Stay up all night worrying',i:'🌙',c:false},{t:'Tell myself: "I can handle this. I\'ve done hard things before."',i:'💪',c:true},{t:'Cancel the appointment',i:'❌',c:false}]},
+      {visual:'🍃',title:'Let the Worry Float',text:'Imagine putting your worry on a leaf and watching it float down a stream. The worry is still real — but you\'re letting it go for now.\n\nHow does that feel?',
+       choices:[{t:'Weird — I don\'t get it',i:'🤔',c:false},{t:'A little better — the worry is still there but it\'s not stuck in my head',i:'🍃',c:true},{t:'Bad — I need to keep thinking about it',i:'😤',c:false}]},
+      {visual:'⏰',title:'Worry Time',text:'Here\'s a cool skill: give your worry a "Worry Time." Say to yourself: "I will think about this worry at 5pm for 10 minutes. Not now." Then do something else.\n\nWhen does worry time help most?',
+       choices:[{t:'When I want to worry all day long',i:'😩',c:false},{t:'When I\'m trying to sleep or do something important',i:'✅',c:true},{t:'Never — worrying is always useful',i:'❌',c:false}]}
+    ]
+  }
+};
+
+let currentQuest=null, currentStep=0;
+
+function goQuest(type){
+  currentQuest=questData[type];
+  currentStep=0;
+  document.getElementById('questIslandName').textContent=currentQuest.island;
+  document.getElementById('questIslandSub').textContent=currentQuest.sub;
+  showScreen('quest');
+  renderStep();
+}
+
+function renderStep(){
+  const s=currentQuest.steps[currentStep];
+  ['sd1','sd2','sd3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.className='step-dot'+(i<currentStep?' done':i===currentStep?' active':'');
+  });
+  document.getElementById('sceneVisual').textContent=s.visual;
+  document.getElementById('sceneTitle').textContent=s.title;
+  document.getElementById('sceneText').innerHTML=s.text.replace(/\n/g,'<br>');
+
+  const cw=document.getElementById('choicesWrap');
+  cw.innerHTML='';
+  s.choices.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='choice';
+    btn.innerHTML=`<span class="choice-ico">${c.i}</span>${c.t}`;
+    btn.onclick=()=>pickAnswer(btn,c.c,c.t);
+    cw.appendChild(btn);
+  });
+
+  document.getElementById('aiBubble').classList.remove('show');
+  document.getElementById('feedbackPop').classList.remove('show');
+  document.getElementById('scenarioWrap').scrollTo({top:0,behavior:'smooth'});
+}
+
+async function pickAnswer(btn,correct,chosen){
+  document.querySelectorAll('.choice').forEach(b=>{b.onclick=null;b.style.opacity='.45'});
+  btn.style.opacity='1';
+  btn.classList.add(correct?'correct':'wrong');
+
+  const ab=document.getElementById('aiBubble');
+  const dots=document.getElementById('aiDots');
+  const txt=document.getElementById('aiText');
+  ab.classList.add('show');
+  dots.style.display='flex';txt.style.display='none';
+
+  setTimeout(()=>document.getElementById('scenarioWrap').scrollTo({top:9999,behavior:'smooth'}),150);
+
+  const step=currentQuest.steps[currentStep];
+  const prompt=correct
+    ?`You are Sparky, a fun AI buddy for teens/young adults with intellectual disability (IQ ~70). They just got the RIGHT answer in a skill practice game. Scenario: "${step.title}". They chose: "${chosen}". Give SUPER encouraging feedback in 2 sentences max. Simple words only. 1-2 emojis. Be hype, like a best friend celebrating them!`
+    :`You are Sparky, a fun AI buddy for teens/young adults with intellectual disability (IQ ~70). They got an INCORRECT answer. Scenario: "${step.title}". They chose: "${chosen}". The right answer was: "${step.choices.find(c=>c.c).t}". In 2-3 sentences max, gently explain WHY the better answer works. Zero shame. Simple words. Warm and encouraging. 1-2 emojis.`;
+
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||(correct?"YES! That's exactly right! You're amazing! 🎉":"Good try! Next time, remember to ask directly — it always works better! 💪");
+    dots.style.display='none';txt.textContent=reply;txt.style.display='block';
+  }catch{
+    dots.style.display='none';
+    txt.textContent=correct?"YES! That's exactly right! You're amazing! 🎉":"Good try! Next time, remember to ask directly — it always works better! 💪";
+    txt.style.display='block';
+  }
+
+  setTimeout(()=>{
+    const fp=document.getElementById('feedbackPop');
+    fp.className='feedback-pop show '+(correct?'great':'try');
+    document.getElementById('fbEmoji').textContent=correct?'🎉':'💛';
+    document.getElementById('fbTitle').textContent=correct?'Nailed it!!':'Good Try!';
+    document.getElementById('fbMsg').textContent=txt.textContent;
+    document.getElementById('nextBtn').textContent=currentStep<2?'Next Step →':'🏆 Finish!';
+    document.getElementById('scenarioWrap').scrollTo({top:9999,behavior:'smooth'});
+  },700);
+}
+
+function nextStep(){
+  currentStep++;
+  if(currentStep>=3){
+    spawnConfetti();
+    showScreen('win');
+    document.getElementById('winMsg').textContent=
+      currentQuest.island.includes('Speak')?'Amazing!! You practiced how to speak up. You\'re getting SO good at this! 🌟':
+      currentQuest.island.includes('Think')?'Wow!! You flipped those sneaky thoughts like a pro! Your brain is getting stronger! 💪':
+      'You busted those worries!! Worry Time and Leaves on Stream are yours now. 🍃';
+    return;
+  }
+  renderStep();
+  document.getElementById('scenarioWrap').scrollTo({top:0,behavior:'smooth'});
+}
+
+function readAloud(){
+  const txt=document.getElementById('sceneText').innerText;
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(txt);
+    u.rate=.85;u.pitch=1.1;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+// ── BOX BREATHING ──
+let breathing=false,breathPhase=0,breathCount=0,breathTimer=null;
+const breathPhases=[
+  {w:'BREATHE IN',c:4,i:'Breathe in slowly through your nose... 🌬️'},
+  {w:'HOLD',c:4,i:'Hold it... nice and still... 😌'},
+  {w:'BREATHE OUT',c:4,i:'Breathe out slowly through your mouth... 💨'},
+  {w:'HOLD',c:4,i:'Rest... you\'re doing great... 🌊'}
+];
+function toggleBreath(){
+  if(breathing){
+    clearTimeout(breathTimer);breathing=false;
+    document.getElementById('boxWord').textContent='READY?';
+    document.getElementById('boxCount').textContent='▶';
+    document.getElementById('breathInstr').textContent='Tap the button to start breathing with me';
+    document.getElementById('breathBtn').textContent='Start Breathing 🌊';
+  } else {
+    breathing=true;breathPhase=0;
+    breathCount=breathPhases[0].c;
+    document.getElementById('breathBtn').textContent='Stop';
+    runBreath();
+  }
+}
+function runBreath(){
+  if(!breathing)return;
+  const p=breathPhases[breathPhase];
+  document.getElementById('boxWord').textContent=p.w;
+  document.getElementById('boxCount').textContent=breathCount;
+  document.getElementById('breathInstr').textContent=p.i;
+  breathTimer=setTimeout(()=>{
+    breathCount--;
+    if(breathCount<=0){breathPhase=(breathPhase+1)%4;breathCount=breathPhases[breathPhase].c;}
+    runBreath();
+  },1000);
+}
+
+// ── CALM TABS ──
+function switchCalm(btn,mode){
+  document.querySelectorAll('.calm-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('calmBox').style.display=mode==='box'?'flex':'none';
+  document.getElementById('calmLeaves').style.display=mode==='leaves'?'flex':'none';
+  const pmr=document.getElementById('calmPmr');
+  pmr.style.display=mode==='pmr'?'flex':'none';
+  if(mode==='leaves')renderLeaves();
+}
+
+// ── LEAVES ──
+let leavesRendered=false;
+const leaveEmojis=['🍃','🍂','🍁','🌿','🌸'];
+function renderLeaves(){
+  if(leavesRendered)return;leavesRendered=true;
+  const scene=document.getElementById('calmLeaves');
+  leaveEmojis.forEach((e,i)=>{
+    const l=document.createElement('div');
+    l.className='leaf';l.textContent=e;
+    l.style.cssText=`bottom:${60+Math.random()*40}px;animation-duration:${8+Math.random()*6}s;animation-delay:${-Math.random()*14}s`;
+    scene.appendChild(l);
+  });
+}
+function releaseLeaf(){
+  const v=document.getElementById('leafInput').value.trim();
+  if(!v)return;
+  document.getElementById('leafInput').value='';
+  const l=document.createElement('div');
+  l.className='leaf';
+  l.style.cssText=`bottom:80px;font-size:14px;background:rgba(255,255,255,.15);padding:4px 8px;border-radius:10px;animation-duration:12s;color:white;font-weight:700`;
+  l.textContent=v.substring(0,20)+'…';
+  document.getElementById('calmLeaves').appendChild(l);
+  setTimeout(()=>l.remove(),13000);
+}
+
+// ── PMR ──
+function startPMR(){
+  const steps=['Squeeze your HANDS really tight... hold... NOW let go! 😌','Tense your ARMS like a superhero... hold... NOW relax them! 💪','Scrunch your FACE tight... hold... NOW let it go smooth! 😄'];
+  let i=0;
+  const pmr=document.getElementById('calmPmr');
+  function next(){
+    if(i>=steps.length){pmr.children[2].textContent='Great job! Your whole body is relaxed now. 🌟 You did it!';return;}
+    pmr.children[2].textContent=steps[i++];
+    setTimeout(next,4000);
+  }
+  next();
+}
+
+// ── MOOD ──
+function pickMood(btn){
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('picked'));
+  btn.classList.add('picked');
+  const mood=btn.querySelector('.mood-label').textContent;
+  if(mood==='NERVOUS'||mood==='SAD'){
+    setTimeout(()=>{
+      if(confirm('😊 It looks like you might need some support. Want to talk to Sparky or try the Calm Zone?')){
+        showScreen('buddy');
+      }
+    },400);
+  }
+}
+
+// ── AR WORLD ──
+const arCreatureData={
+  '🐻‍❄️':{
+    skill:'Breathing',
+    q:'When you feel really nervous, what\'s a great first step?',
+    choices:[
+      {t:'Take a slow deep breath and count to 4',c:true},
+      {t:'Panic and run away',c:false},
+      {t:'Just push through it without doing anything',c:false}
+    ]
+  },
+  '🦊':{
+    skill:'Thought Flipping',
+    q:'You think "I\'m so bad at everything." What do you do with that thought?',
+    choices:[
+      {t:'Believe it — it must be true',c:false},
+      {t:'Flip it: "I struggle with some things, but I\'m good at others"',c:true},
+      {t:'Think about it more and more',c:false}
+    ]
+  },
+  '🦉':{
+    skill:'Self-Advocacy',
+    q:'You want something but feel nervous to ask. What\'s the brave thing to do?',
+    choices:[
+      {t:'Say nothing and hope someone notices',c:false},
+      {t:'Get upset and give up',c:false},
+      {t:'Use a calm voice and say what you need',c:true}
+    ]
+  }
+};
+
+let currentARCreature=null;
+function catchCreature(name,emoji,skill,context){
+  currentARCreature=emoji;
+  document.getElementById('arCreatureEmoji').textContent=emoji;
+  document.getElementById('arCreatureName').textContent=name+' appeared!';
+  document.getElementById('arCreatureSub').textContent='Practice '+skill+' to catch it! ✨';
+  const d=arCreatureData[emoji];
+  document.getElementById('arCatchQ').textContent=d?d.q:context;
+  const cc=document.getElementById('arCatchChoices');
+  cc.innerHTML='';
+  const choices=d?d.choices:[
+    {t:'Take a deep breath first',c:true},
+    {t:'Just ignore the feeling',c:false},
+    {t:'Give up immediately',c:false}
+  ];
+  choices.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='ar-catch-choice';
+    btn.textContent=c.t;
+    btn.onclick=()=>arAnswer(btn,c.c);
+    cc.appendChild(btn);
+  });
+  document.getElementById('arCatchFeedback').style.display='none';
+  document.getElementById('arDismissBtn').textContent='Close ✕';
+  document.getElementById('arCatchModal').classList.add('show');
+}
+
+async function arAnswer(btn,correct){
+  document.querySelectorAll('.ar-catch-choice').forEach(b=>{b.onclick=null;b.style.opacity='.5'});
+  btn.style.opacity='1';btn.classList.add(correct?'correct':'wrong');
+  const fb=document.getElementById('arCatchFeedback');
+  fb.style.display='block';
+  fb.style.background=correct?'rgba(126,211,33,.1)':'rgba(255,184,0,.1)';
+  fb.style.borderColor=correct?'var(--lime)':'var(--amber)';
+
+  const prompt=correct
+    ?`You are Sparky, an AI buddy for a teen with intellectual disability. They just caught an AR creature in a Pokemon-Go style skill game by getting the right answer! Give a SUPER HYPE 1-2 sentence celebration. Simple words. 2 emojis max. Make them feel like a champion!`
+    :`You are Sparky, an AI buddy for a teen with intellectual disability. They got the wrong answer in an AR creature catching game. In 1-2 sentences, kindly explain the right approach. Simple words. Encouraging. 1 emoji.`;
+
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data=await res.json();
+    fb.textContent=(correct?'🎉 CAUGHT IT! ':'💛 ')+(data.content?.[0]?.text||'Great try!');
+  }catch{
+    fb.textContent=correct?'🎉 CAUGHT IT! You\'re amazing!! 🏆':'💛 Good try! Remember: breathing first always helps!';
+  }
+  document.getElementById('arDismissBtn').textContent=correct?'🏆 Collect +60 ⭐':'Try again next time!';
+}
+
+function dismissAR(){
+  document.getElementById('arCatchModal').classList.remove('show');
+}
+
+// ── BUDDY AI CHAT ──
+const sparkyPrompt=`You are Sparky, a warm and fun AI buddy for teenagers and young adults with intellectual disabilities (IQ around 70). You help them practice CBT skills and feel supported.
+
+Rules:
+- Use VERY simple language. Max 5th-6th grade reading level.
+- Short sentences only. 2-4 sentences max per message.
+- Use 1-3 emojis per message.
+- Never use clinical or medical words.
+- Never shame or lecture them.
+- Be enthusiastic, warm, like a best friend.
+- If they say they want to hurt themselves or feel unsafe, immediately say: "I hear you and I care about you. Please call or text 988 right now — they're really nice people who will help. 💙"
+- If they're sad: validate first, then offer ONE simple thing to try.
+- If they're anxious: offer box breathing in simple terms.
+- If they did something great: go all out celebrating them!`;
+
+async function sendChat(){
+  const inp=document.getElementById('chatInp');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';
+  addMsg(msg,'user');
+  document.getElementById('quickChips').style.display='none';
+
+  const typId='typ_'+Date.now();
+  const t=document.createElement('div');
+  t.className='cmsg ai';t.id=typId;
+  t.innerHTML='<div class="cmsg-header"><div class="mini-orb">✦</div><span class="mini-label">SPARKY</span></div><div class="ai-dots"><span></span><span></span><span></span></div>';
+  document.getElementById('chatMessages').appendChild(t);scrollChat();
+
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sparkyPrompt,messages:[{role:"user",content:msg}]})
+    });
+    const data=await res.json();
+    document.getElementById(typId)?.remove();
+    addMsg(data.content?.[0]?.text||"I'm here for you! 💛 Tell me more!",'ai');
+  }catch{
+    document.getElementById(typId)?.remove();
+    addMsg("Oops, I had a little trouble! But I\'m still here. 💛 Try again?",'ai');
+  }
+}
+function sendQuick(t){document.getElementById('chatInp').value=t;sendChat();}
+function addMsg(text,type){
+  const d=document.createElement('div');
+  d.className='cmsg '+type;
+  d.innerHTML=type==='ai'?`<div class="cmsg-header"><div class="mini-orb">✦</div><span class="mini-label">SPARKY</span></div>${text}`:text;
+  document.getElementById('chatMessages').appendChild(d);
+  scrollChat();
+}
+function scrollChat(){setTimeout(()=>{const a=document.getElementById('chatMessages');a.scrollTo({top:a.scrollHeight,behavior:'smooth'})},100);}
+
+// ── WIN / CONFETTI ──
+function spawnConfetti(){
+  const c=document.getElementById('confettiContainer');
+  c.innerHTML='';
+  const cols=['#FF2D78','#FF6B00','#FFB800','#7ED321','#00D4FF','#A855F7','#5B2FE8'];
+  for(let i=0;i<50;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    const w=Math.random()*10+5,h=Math.random()*14+6;
+    p.style.cssText=`width:${w}px;height:${h}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;animation-duration:${Math.random()*2+2}s;animation-delay:${Math.random()*1.5}s`;
+    c.appendChild(p);
+  }
+}
+function logRealWorld(){
+  document.getElementById('winMsg').textContent='⭐ MEGA BONUS STARS EARNED! Using a skill in REAL LIFE is the hardest thing — and YOU DID IT. Your therapist has been told. They are SO proud of you!! 🏆🌟';
+  document.querySelector('.real-world-btn').textContent='🌟 Amazing! That\'s the BIGGEST win!';
+  document.querySelector('.real-world-btn').disabled=true;
+}
+</script>
+</body>
+</html>
