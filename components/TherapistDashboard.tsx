@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase";
+import type { ARCreatureRow } from "@/lib/supabase";
 
 /* ─── CLIENT DATA ─── */
 interface Client {
@@ -30,8 +32,17 @@ const CLIENTS: Client[] = [
   { id: "sam", av: "\u{1F916}", bg: "rgba(255,184,0,.1)", name: "Sam Lee", age: 21, goal: "Anxiety Regulation", status: "active", streak: 11, prog: 84, mood: "\u{1F60A}", last: "20m ago", quests: 26, critters: 10, calm: 41, real: 4, stage: 2 },
 ];
 
-type ViewId = "dashboard" | "alerts" | "live" | "clients" | "quests" | "plans" | "reports" | "messages";
-type ModalId = "addClient" | "note" | "assign" | "addQuest" | "addPlan" | "msg" | null;
+type ViewId = "dashboard" | "alerts" | "live" | "clients" | "quests" | "plans" | "reports" | "messages" | "creatures";
+type ModalId = "addClient" | "note" | "assign" | "addQuest" | "addPlan" | "msg" | "addCreature" | null;
+
+const COLOR_PRESETS = [
+  { label: "Cyan", value: "#00D4FF" },
+  { label: "Orange", value: "#FF6B00" },
+  { label: "Purple", value: "#A855F7" },
+  { label: "Pink", value: "#FF2D78" },
+  { label: "Green", value: "#7ED321" },
+  { label: "Amber", value: "#FFB800" },
+];
 
 const WEEK_DATA = [8, 12, 7, 16, 11, 14, 9];
 const MAX_WEEK = Math.max(...WEEK_DATA);
@@ -57,6 +68,64 @@ export default function TherapistDashboard() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3500);
+  }, []);
+
+  // Supabase creatures
+  const supabase = createClient();
+  const [creatures, setCreatures] = useState<ARCreatureRow[]>([]);
+  const [creaturesLoading, setCreaturesLoading] = useState(true);
+  const [newCreature, setNewCreature] = useState({
+    name: "", emoji: "", skill: "", context: "", practice_question: "",
+    choice1: "", choice2: "", choice3: "", correctChoice: 0,
+    color: "#00D4FF", badge: false,
+  });
+
+  const fetchCreatures = useCallback(async () => {
+    if (!supabase) { setCreaturesLoading(false); return; }
+    const { data, error } = await supabase.from("ar_creatures").select("*").order("sort_order", { ascending: true });
+    if (!error && data) setCreatures(data as ARCreatureRow[]);
+    setCreaturesLoading(false);
+  }, [supabase]);
+
+  useEffect(() => { fetchCreatures(); }, [fetchCreatures]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const channel = supabase
+      .channel("therapist_creatures")
+      .on("postgres_changes", { event: "*", schema: "public", table: "ar_creatures" }, () => fetchCreatures())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase, fetchCreatures]);
+
+  const addCreature = useCallback(async () => {
+    if (!supabase || !newCreature.name || !newCreature.emoji) return;
+    const choices = [
+      { t: newCreature.choice1, c: newCreature.correctChoice === 0 },
+      { t: newCreature.choice2, c: newCreature.correctChoice === 1 },
+      { t: newCreature.choice3, c: newCreature.correctChoice === 2 },
+    ];
+    const position = { top: 100 + Math.floor(Math.random() * 150), left: 30 + Math.floor(Math.random() * 120), dur: 2.5 + Math.random() * 2, delay: Math.random() };
+    await supabase.from("ar_creatures").insert({
+      name: newCreature.name, emoji: newCreature.emoji, skill: newCreature.skill,
+      context: newCreature.context, practice_question: newCreature.practice_question,
+      choices, position, color: newCreature.color, badge: newCreature.badge,
+      sort_order: creatures.length,
+    });
+    setNewCreature({ name: "", emoji: "", skill: "", context: "", practice_question: "", choice1: "", choice2: "", choice3: "", correctChoice: 0, color: "#00D4FF", badge: false });
+    showToast("Creature added to Wild Zone! Clients see it instantly \u2713");
+    setModal(null);
+  }, [supabase, newCreature, creatures.length, showToast]);
+
+  const removeCreature = useCallback(async (id: string) => {
+    if (!supabase) return;
+    await supabase.from("ar_creatures").delete().eq("id", id);
+    showToast("Creature removed from Wild Zone \u2713");
+  }, [supabase, showToast]);
+
   // AI panel
   const [aiMessages, setAiMessages] = useState<{ role: "ai" | "user"; text: string }[]>([
     { role: "ai", text: "Good morning, Dr. Ram\u00EDrez! You have 3 alerts and 5 unread messages. Marcus Williams flagged with mood drop \u2014 I'd recommend outreach today. Jordan Kim hit a real-life milestone! \u{1F389} What do you want to focus on?" },
@@ -71,11 +140,6 @@ export default function TherapistDashboard() {
 
   // Therapist reply
   const [therapistReply, setTherapistReply] = useState("");
-
-  const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3500);
-  }, []);
 
   const navigate = useCallback((id: ViewId) => {
     setView(id);
@@ -164,6 +228,7 @@ export default function TherapistDashboard() {
     messages: "Messages",
     alerts: "Alerts & Flags",
     live: "Live Monitor",
+    creatures: "Wild Zone",
   };
 
   return (
@@ -186,6 +251,7 @@ export default function TherapistDashboard() {
         <div className="sb-section">Clients</div>
         <button type="button" className={`sb-item ${view === "clients" ? "active" : ""}`} onClick={() => navigate("clients")}><span className="sb-ico">{"\u{1F465}"}</span>All Clients</button>
         <button type="button" className={`sb-item ${view === "quests" ? "active" : ""}`} onClick={() => navigate("quests")}><span className="sb-ico">{"\u2694\uFE0F"}</span>Quest Library</button>
+        <button type="button" className={`sb-item ${view === "creatures" ? "active" : ""}`} onClick={() => navigate("creatures")}><span className="sb-ico">{"\u{1F43E}"}</span>Wild Zone<span className="sb-badge" style={{ background: "var(--li)", animation: "none" }}>{creatures.length}</span></button>
         <button type="button" className={`sb-item ${view === "plans" ? "active" : ""}`} onClick={() => navigate("plans")}><span className="sb-ico">{"\u{1F4CB}"}</span>Treatment Plans</button>
 
         <div className="sb-section">Data</div>
@@ -636,6 +702,93 @@ export default function TherapistDashboard() {
             </div>
           )}
 
+          {/* WILD ZONE / CREATURES VIEW */}
+          {view === "creatures" && (
+            <div className="t-view active">
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <div style={{ fontFamily: "'Fredoka One', cursive", fontSize: 18 }}>{"\u{1F43E}"} Wild Zone Creatures</div>
+                <span className="tag green">{creatures.length} active</span>
+                <button type="button" className="tb-btn primary" style={{ marginLeft: "auto" }} onClick={() => setModal("addCreature")}>+ Add Creature</button>
+              </div>
+
+              <div className="insight" style={{ marginBottom: 16 }}>
+                <div className="ins-hdr"><div className="ins-orb">{"\u{1F33F}"}</div><div><div className="ins-lbl">Real-Time Sync</div><div className="ins-nm">Creatures you add or remove appear instantly in client AR worlds</div></div></div>
+                <div className="ins-txt">Each creature teaches a therapeutic skill through a practice question. Clients catch creatures in the Wild Zone to practice skills like breathing, thought flipping, and self-advocacy.</div>
+              </div>
+
+              {creaturesLoading ? (
+                <div className="panel" style={{ padding: 30, textAlign: "center" }}>
+                  <div className="ai-dots" style={{ justifyContent: "center" }}><span /><span /><span /></div>
+                  <div style={{ fontSize: 11, color: "var(--mt)", marginTop: 8 }}>Loading creatures from Supabase...</div>
+                </div>
+              ) : !supabase ? (
+                <div className="alert-c warn">
+                  <div className="al-ico">{"\u26A0\uFE0F"}</div>
+                  <div><div className="al-ttl">Supabase Not Connected</div><div className="al-txt">Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables to manage Wild Zone creatures.</div></div>
+                </div>
+              ) : creatures.length === 0 ? (
+                <div className="panel" style={{ padding: 30, textAlign: "center" }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>{"\u{1F43E}"}</div>
+                  <div style={{ fontFamily: "'Fredoka One', cursive", fontSize: 16, marginBottom: 4 }}>No creatures yet</div>
+                  <div style={{ fontSize: 11, color: "var(--mt)", marginBottom: 14 }}>Add your first creature and it will appear in your clients{"\u2019"} Wild Zone instantly.</div>
+                  <button type="button" className="tb-btn primary" onClick={() => setModal("addCreature")}>+ Add First Creature</button>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+                  {creatures.map((cr) => (
+                    <div key={cr.id} className="panel" style={{ marginBottom: 0 }}>
+                      <div className="panel-hdr" style={{ borderBottomColor: `${cr.color}33` }}>
+                        <div style={{ fontSize: 26, flexShrink: 0 }}>{cr.emoji}</div>
+                        <div style={{ flex: 1 }}>
+                          <div className="panel-ttl" style={{ color: cr.color }}>{cr.name}</div>
+                          <div style={{ fontSize: 9, color: "var(--mt)", marginTop: 1 }}>{cr.skill}</div>
+                        </div>
+                        {cr.badge && <span className="tag green">Badge</span>}
+                      </div>
+                      <div style={{ padding: 12 }}>
+                        <div style={{ fontSize: 10, color: "var(--mt)", marginBottom: 6, fontWeight: 700, letterSpacing: ".5px", textTransform: "uppercase" }}>Context</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,.7)", marginBottom: 10, lineHeight: 1.5 }}>{cr.context}</div>
+
+                        <div style={{ fontSize: 10, color: "var(--mt)", marginBottom: 6, fontWeight: 700, letterSpacing: ".5px", textTransform: "uppercase" }}>Practice Question</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,.7)", marginBottom: 10, lineHeight: 1.5 }}>{cr.practice_question}</div>
+
+                        <div style={{ fontSize: 10, color: "var(--mt)", marginBottom: 6, fontWeight: 700, letterSpacing: ".5px", textTransform: "uppercase" }}>Choices</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+                          {(Array.isArray(cr.choices) ? cr.choices : []).map((ch, i) => (
+                            <div key={i} style={{
+                              fontSize: 10, padding: "5px 9px", borderRadius: 8,
+                              background: ch.c ? "rgba(126,211,33,.1)" : "rgba(255,255,255,.03)",
+                              border: `1px solid ${ch.c ? "rgba(126,211,33,.25)" : "rgba(255,255,255,.06)"}`,
+                              color: ch.c ? "var(--li)" : "rgba(255,255,255,.6)",
+                            }}>
+                              {ch.c ? "\u2713 " : ""}{ch.t}
+                            </div>
+                          ))}
+                        </div>
+
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <div style={{ width: 14, height: 14, borderRadius: 4, background: cr.color, flexShrink: 0 }} />
+                          <span style={{ fontSize: 10, color: "var(--mt)" }}>{cr.color}</span>
+                          <button
+                            type="button"
+                            style={{
+                              marginLeft: "auto", background: "rgba(255,45,120,.1)", border: "1px solid rgba(255,45,120,.25)",
+                              borderRadius: 8, padding: "4px 10px", fontSize: 10, fontWeight: 800, color: "var(--mg)",
+                              cursor: "pointer", fontFamily: "'Nunito', sans-serif",
+                            }}
+                            onClick={() => removeCreature(cr.id)}
+                          >
+                            {"\u{1F5D1}"} Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* REPORTS VIEW */}
           {view === "reports" && (
             <div className="t-view active">
@@ -700,7 +853,7 @@ export default function TherapistDashboard() {
         </div>
         <div className="aip-bar">
           <input className="aip-inp" placeholder="Ask Pulse AI anything..." value={aiInput} onChange={(e) => setAiInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendAI()} />
-          <button type="button" className="aip-send" onClick={sendAI}>{"\u27A4"}</button>
+          <button type="button" className="aip-send" onClick={() => sendAI()}>{"\u27A4"}</button>
         </div>
       </div>
 
@@ -778,6 +931,67 @@ export default function TherapistDashboard() {
             <div className="f-row"><label className="f-lbl">Clinical Summary</label><textarea className="f-ta" placeholder="Presentation, primary challenges, treatment rationale..." /></div>
             <div className="f-row"><label className="f-lbl">Primary Goal</label><input className="f-inp" placeholder="e.g. Self-advocacy in work and community settings" /></div>
             <div className="modal-foot"><button type="button" className="modal-btn cancel" onClick={() => setModal(null)}>Cancel</button><button type="button" className="modal-btn save" onClick={() => { showToast("Treatment plan saved and synced to client app \u2713"); setModal(null); }}>Save Plan {"\u2713"}</button></div>
+          </div>
+        </div>
+      )}
+
+      {modal === "addCreature" && (
+        <div className="t-overlay show" onClick={(e) => e.target === e.currentTarget && setModal(null)}>
+          <div className="modal">
+            <div className="modal-ttl">{"\u{1F43E}"} Add Wild Zone Creature</div>
+            <div className="modal-sub">Create a therapeutic creature. It will appear in all clients&apos; Wild Zone AR world instantly via real-time sync.</div>
+            <div className="f-2col">
+              <div className="f-row"><label className="f-lbl">Creature Name</label><input className="f-inp" placeholder="e.g. Breathe Bear" value={newCreature.name} onChange={(e) => setNewCreature((s) => ({ ...s, name: e.target.value }))} /></div>
+              <div className="f-row"><label className="f-lbl">Emoji</label><input className="f-inp" placeholder="e.g. 🐻‍❄️" value={newCreature.emoji} onChange={(e) => setNewCreature((s) => ({ ...s, emoji: e.target.value }))} /></div>
+            </div>
+            <div className="f-2col">
+              <div className="f-row"><label className="f-lbl">Skill Area</label><input className="f-inp" placeholder="e.g. Breathing" value={newCreature.skill} onChange={(e) => setNewCreature((s) => ({ ...s, skill: e.target.value }))} /></div>
+              <div className="f-row">
+                <label className="f-lbl">Color</label>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+                  {COLOR_PRESETS.map((c) => (
+                    <button key={c.value} type="button" onClick={() => setNewCreature((s) => ({ ...s, color: c.value }))} style={{
+                      width: 28, height: 28, borderRadius: 8, background: c.value, border: newCreature.color === c.value ? "2px solid #fff" : "2px solid transparent",
+                      cursor: "pointer", transition: "all .15s",
+                    }} title={c.label} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="f-row"><label className="f-lbl">Context / Situation</label><textarea className="f-ta" placeholder="e.g. Feeling really nervous right now?" value={newCreature.context} onChange={(e) => setNewCreature((s) => ({ ...s, context: e.target.value }))} /></div>
+            <div className="f-row"><label className="f-lbl">Practice Question</label><textarea className="f-ta" placeholder="e.g. When you feel really nervous, what's a great first step?" value={newCreature.practice_question} onChange={(e) => setNewCreature((s) => ({ ...s, practice_question: e.target.value }))} /></div>
+
+            <div style={{ fontSize: 10, fontWeight: 900, color: "var(--mt)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>Answer Choices (select the correct one)</div>
+            {[0, 1, 2].map((i) => {
+              const key = `choice${i + 1}` as "choice1" | "choice2" | "choice3";
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => setNewCreature((s) => ({ ...s, correctChoice: i }))}
+                    style={{
+                      width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer",
+                      background: newCreature.correctChoice === i ? "var(--li)" : "rgba(255,255,255,.05)",
+                      border: newCreature.correctChoice === i ? "2px solid var(--li)" : "2px solid rgba(255,255,255,.1)",
+                      color: newCreature.correctChoice === i ? "#000" : "var(--mt)",
+                      fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    {newCreature.correctChoice === i ? "\u2713" : ""}
+                  </button>
+                  <input className="f-inp" style={{ marginBottom: 0 }} placeholder={`Choice ${i + 1}`} value={newCreature[key]} onChange={(e) => setNewCreature((s) => ({ ...s, [key]: e.target.value }))} />
+                </div>
+              );
+            })}
+
+            <div className="f-row" style={{ marginTop: 10 }}>
+              <label className="f-check"><input type="checkbox" checked={newCreature.badge} onChange={(e) => setNewCreature((s) => ({ ...s, badge: e.target.checked }))} /> Show badge indicator (!) on creature</label>
+            </div>
+
+            <div className="modal-foot">
+              <button type="button" className="modal-btn cancel" onClick={() => setModal(null)}>Cancel</button>
+              <button type="button" className="modal-btn save" onClick={addCreature} disabled={!newCreature.name || !newCreature.emoji}>Add Creature {"\u2713"}</button>
+            </div>
           </div>
         </div>
       )}
