@@ -78,16 +78,7 @@ const ObjectDetectionCamera = (props: {
       ctx,
       props.modelName
     );
-    console.debug("[Companion Camera] runModel done", {
-      hasClassIds: Array.isArray(classIds),
-      classIdsLength: classIds?.length ?? 0,
-      classIds: classIds ?? [],
-      hasOnDetections: !!props.onDetections,
-      willCallOnDetections: !!(classIds?.length && props.onDetections),
-    });
-    if (classIds?.length && props.onDetections) {
-      props.onDetections(classIds);
-    }
+    props.onDetections?.(classIds ?? []);
     setInferenceTime(inferenceTime);
   };
 

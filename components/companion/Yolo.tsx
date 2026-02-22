@@ -168,26 +168,13 @@ const Yolo = (props: {
     modelName: string
   ): number[] => {
     if (modelName in postprocessMap) {
-      const classIds = postprocessMap[modelName](
+      return postprocessMap[modelName](
         ctx,
         modelResolution,
         tensor,
         conf2color
       );
-      if (classIds.length > 0) {
-        console.debug("[Companion Yolo] postprocess returned classIds", {
-          modelName,
-          classIds,
-          count: classIds.length,
-        });
-      }
-      props.onDetections?.(classIds);
-      return classIds;
     }
-    console.debug("[Companion Yolo] postprocess: modelName not in map", {
-      modelName,
-      keys: Object.keys(postprocessMap),
-    });
     return [];
   };
 
